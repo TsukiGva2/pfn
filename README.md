@@ -15,14 +15,13 @@ promise.
 here you go.
 
 ```py
-.f ( // defining a function f
-  |x,y| // with arguments x and y
+.f (
+  |x,y|
 
-  -> + x,y /* return x + y, (yes, i know, +x,y is pretty cumbersome)
-  "->" is for return */
+  -> + x,y
 )
 
-a:=2 // defining a variable a with value 2
+a:=2
 
 print(f(a,5))
 ```
