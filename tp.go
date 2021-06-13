@@ -152,6 +152,8 @@ func (tp *Transpiler) ret() (string, error) {
 		return "", errors.New("not a return statement: error parsing expression")
 	}
 
+	fmt.Println(tp.ctoken())
+
 	output += expr
 
 	return output, nil
@@ -194,7 +196,7 @@ func (tp *Transpiler) variable() (string, error) {
 func (tp *Transpiler) expr() (string, error) {
 	// (call | literal)
 
-	fns := []parserFn{tp.call, tp.list, tp.literal, tp.grouping}
+	fns := []parserFn{tp.grouping, tp.call, tp.list, tp.literal}
 	old := tp.current
 
 	for i := range fns {
@@ -299,7 +301,6 @@ func (tp *Transpiler) call() (string, error) {
 	switch tok.tokTy {
 	case cIdentifier:
 		isOp = false
-		break
 
 	case cPlus:
 		fallthrough
@@ -309,7 +310,6 @@ func (tp *Transpiler) call() (string, error) {
 		fallthrough
 	case cSlash:
 		isOp = true
-		break
 
 	default:
 		return "", errors.New("not a function call: no operator")
@@ -356,8 +356,6 @@ func (tp *Transpiler) call() (string, error) {
 		if argcount < 2 {
 			return "", errors.New("not a function call: not enough arguments to function " + op)
 		}
-
-		tok = tp.ctoken()
 
 		/*if tok.tokTy != cRparen {
 			return "", errors.New("not a function call: missing closing paren")
@@ -414,6 +412,8 @@ func (tp *Transpiler) call() (string, error) {
 
 	output += ")"
 
+	fmt.Println(tp.ctoken())
+
 	return output, nil
 }
 
@@ -423,10 +423,9 @@ func (tp *Transpiler) grouping() (string, error) {
 	var output string
 
 	tok := tp.ctoken()
-	fmt.Println(tok)
 
 	if tok.tokTy != cLparen {
-		return "", errors.New("not a parenthesized expr at all, it even misses the fucking opening paren!")
+		return "", errors.New("not a parenthesized expr at all, it even misses the opening paren")
 	}
 
 	tp.advance(1)
@@ -438,7 +437,6 @@ func (tp *Transpiler) grouping() (string, error) {
 		return "", errors.New("on grouping: error parsing expr")
 	}
 
-	tp.advance(1)
 	tok = tp.ctoken()
 
 	if tok.tokTy != cRparen {
@@ -471,13 +469,9 @@ func (tp Transpiler) ctoken() Token {
 func (tp Transpiler) err(where string, msg string) {
 	if !haderror {
 		haderror = true
-		fmt.Printf("had error on %s, line %d\n%s\n",
-			where, tp.ctoken().line+1, msg)
+		fmt.Printf("had error on %s, line %d, col %d\n%s\n",
+			where, tp.ctoken().line+1, tp.ctoken().col+1, msg)
 	}
-}
-
-func isUpper(s string) bool {
-	return strings.ToUpper(s) == s
 }
 
 func (tp *Transpiler) rfwo(fns []parserFn) (string, error) {
@@ -506,6 +500,4 @@ func (tp *Transpiler) rfwo(fns []parserFn) (string, error) {
 
 	tp.err("rfwo", "no matching pfn")
 	panic(last)
-
-	return "", errors.New("no matching pfn")
 }

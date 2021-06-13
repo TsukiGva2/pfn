@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"strconv"
 )
 
@@ -57,11 +56,12 @@ type Token struct {
 	lexeme  string
 	literal interface{}
 	line    int
+	col     int
 }
 
-func (s Token) str() string {
+/*DEBUG: func (s Token) str() string {
 	return fmt.Sprintf("%#v %#v %#v", s.tokTy, s.lexeme, s.literal)
-}
+}*/
 
 // } token
 
@@ -81,7 +81,7 @@ func (s *Scanner) scanTokens() []Token {
 		tokens = append(tokens, s.scanToken())
 	}
 
-	tokens = append(tokens, Token{cEOF, "", nil, s.line})
+	tokens = append(tokens, Token{cEOF, "", nil, s.line, s.current})
 	return tokens
 }
 
@@ -140,13 +140,17 @@ begin:
 	case '=':
 		return s.partialTok(tern(s.match('='), cDoubleEq, cEq))
 	case '/':
-		if s.match('/') {
-			for s.peek() != '\n' && !s.isAtEnd() {
-				s.advance()
-			}
-		} else {
+		if !s.match('/') {
 			return s.partialTok(cSlash)
 		}
+
+		for s.peek() != '\n' && !s.isAtEnd() {
+			s.advance()
+		}
+
+		s.start = s.current
+		goto begin
+
 	case '"':
 		return s.getstr()
 	case '\n':
@@ -189,7 +193,7 @@ func (s Scanner) partialTok(tokTy int) Token {
 
 func (s Scanner) mkTok(tokTy int, literal interface{}) Token {
 	txt := s.text[s.start:s.current]
-	return Token{tokTy, txt, literal, s.line}
+	return Token{tokTy, txt, literal, s.line, s.current}
 }
 
 func (s *Scanner) advance() byte {

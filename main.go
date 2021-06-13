@@ -18,7 +18,7 @@ func main() {
 	repl()
 }
 
-func runFile(f string) {
+func runFile(f string) string {
 	cont, err := ioutil.ReadFile(f)
 
 	if err != nil {
@@ -26,7 +26,9 @@ func runFile(f string) {
 	}
 
 	code := string(cont)
-	run(code)
+	t := run(code)
+
+	return t.output
 }
 
 func repl() {
@@ -67,7 +69,7 @@ func repl() {
 	}
 }
 
-func run(code string) {
+func run(code string) Transpiler {
 	sc := Scanner{code, 0, 0, 0}
 	tokens := sc.scanTokens()
 	//for i := range tokens {
@@ -77,4 +79,6 @@ func run(code string) {
 	tp.start()
 
 	fmt.Println(tp.output)
+
+	return tp
 }
