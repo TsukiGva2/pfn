@@ -11,17 +11,17 @@ promise.
 here you go.
 
 ```
-.f (          // defining a function f
-	|x,y|       // with arguments x and y
+.f ( // defining a function f
+	|x,y| // with arguments x and y
 
-	-> add(x,y) /* return the result of add(x,y)
-								 ("->" is for return) */
+	-> + x,y /* return x + y, (yes, i know, +x,y is pretty cumbersome)
+	"->" is for return */
 )
 
 a:=2          // defining a variable a with value 2
 
 >f(a,5)       /* the ">" is for printing a value
-							   which is the result of the function
-								 f with arguments a and 5 */
+        	which is the result of the function
+        	f with arguments a and 5 */
 ```
 
