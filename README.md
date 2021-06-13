@@ -33,8 +33,8 @@ then clone the repo and run the code with
     $ go run .
     
 this will start a repl where you can type some code, it is pretty simple,
-type some code and when you're done, type "run", or, if you want to run single lines,
-type "auto", and, when you're done, type "exit" or CTRL-C
+type some code and when you're done, type "run", or, if you want to transpile single lines,
+type "auto". When you're done, type "exit" or CTRL-C
 
 you can also run code from a file with
 
