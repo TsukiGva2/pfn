@@ -1,6 +1,8 @@
 # pfn
 
-pfn is a transpiled programming language i made while trying to learn parsers, it's pretty basic and it isn't quite usable atm, it's still a work in progress
+pfn is a transpiled programming language i made while trying to learn parsers, it's pretty basic and it isn't quite usable atm, it's still a work in progress.
+
+it transpiles to python btw
 
 ## why making yet another language?
 
@@ -21,6 +23,17 @@ here you go.
 )
 
 a:=2 // defining a variable a with value 2
+
+print(f(a,5))
+```
+
+this transpiles to its equivalent python code
+
+```py
+def f(x,y):
+  return x + y
+  
+a = 2
 
 print(f(a,5))
 ```
