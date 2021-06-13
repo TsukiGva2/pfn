@@ -4,6 +4,8 @@ pfn is a transpiled programming language i made while trying to learn parsers, i
 
 it transpiles to python btw
 
+[![Build Status](https://travis-ci.com/TsukiGva2/pfn.svg?branch=main)](https://travis-ci.com/TsukiGva2/pfn)
+
 ## why making yet another language?
 
 i know, most of the stuff i do is mess around with
