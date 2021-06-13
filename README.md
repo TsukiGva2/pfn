@@ -14,7 +14,7 @@ promise.
 
 here you go.
 
-```
+```py
 .f ( // defining a function f
   |x,y| // with arguments x and y
 
