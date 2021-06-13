@@ -1,4 +1,4 @@
-# omg
+# pfn
 
 ## why making yet another language?
 
