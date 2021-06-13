@@ -5,3 +5,5 @@ go:
 - "1.16"
 - 1.16.x
 - master
+
+script: go test ./...
