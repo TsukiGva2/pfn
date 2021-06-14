@@ -140,19 +140,15 @@ begin:
 	case '=':
 		return s.partialTok(tern(s.match('='), cDoubleEq, cEq))
 	case '/':
-		if !s.match('/') {
-			return s.partialTok(cSlash)
-		}
-
+		return s.partialTok(cSlash)
+	case '"':
+		return s.getstr()
+	case '#':
 		for s.peek() != '\n' && !s.isAtEnd() {
 			s.advance()
 		}
-
 		s.start = s.current
 		goto begin
-
-	case '"':
-		return s.getstr()
 	case '\n':
 		s.line++
 		fallthrough
