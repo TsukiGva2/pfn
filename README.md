@@ -20,7 +20,7 @@ here you go.
 .f (
   |x,y|
 
-  -> + x,y
+  -> (+ x y)
 )
 
 a:=2
