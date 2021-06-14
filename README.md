@@ -81,6 +81,6 @@ you can also run code from a file with
 
 and if you want to just grab an executable, run
 
-    $ go build ,
+    $ go build .
 
 and you will have an executable file named pc
