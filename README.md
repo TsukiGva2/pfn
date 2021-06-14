@@ -1,5 +1,7 @@
 # pfn
 
+[![Build Status](https://travis-ci.com/TsukiGva2/pfn.svg?branch=main)](https://travis-ci.com/TsukiGva2/pfn)
+
 ## pfn is...
 
 a transpiled programming language i made while trying to learn parsers, it's pretty basic and it isn't quite usable atm, it's still a work in progress.
@@ -7,8 +9,6 @@ a transpiled programming language i made while trying to learn parsers, it's pre
 the language borrows some design ideas from languages like lisp, Haskell, ruby and clojure, but it isn't quite consistent when it comes to language constructs,  for example, functions are defined with .f(|x,y|) but are called with (f x y), another example, function blocks use ( and ) while "when" blocks use "do" and "end".
 
 it transpiles to python btw
-
-[![Build Status](https://travis-ci.com/TsukiGva2/pfn.svg?branch=main)](https://travis-ci.com/TsukiGva2/pfn)
 
 ## why making yet another language?
 
