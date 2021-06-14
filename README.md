@@ -33,12 +33,36 @@ a:=2
 this transpiles to its equivalent python code
 
 ```py
-def f(x,y):
-  return (x+y)
-  
-a=2
+class UnmatchedError(Exception):
+        pass
 
-(print((f(a,5))))
+class ArgcountError(Exception):
+        pass
+
+def __pfn_call(p, args):
+        result=None
+        broke=False
+        for f in p:
+                try:
+                        result=f(args)
+                except (UnmatchedError, ArgcountError):
+                        continue
+                broke=True
+
+                break
+        if not broke:
+                raise Exception('no matching function')
+
+        return result
+def pfn_f(*args):
+        if len(args) < 2:
+                raise ArgcountError('too few arguments for function f')
+        x = args[0]
+        y = args[1]
+        return (x+y)
+
+a=2
+print(__pfn_call([pfn_f], a,5))
 ```
 
 The output code isn't the most pretty or optimized, i plan to work on that part after i finish the language itself.
