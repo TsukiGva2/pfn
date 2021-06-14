@@ -12,7 +12,9 @@ i know, most of the stuff i do is mess around with
 programming languages, but this is the last one, i
 promise.
 
-## code sample?
+## About the language
+
+### code sample?
 
 here you go.
 
@@ -32,12 +34,35 @@ this transpiles to its equivalent python code
 
 ```py
 def f(x,y):
-  return x + y
+  return (x+y)
   
-a = 2
+a=2
 
-print(f(a,5))
+(print((f(a,5))))
 ```
+
+The output code isn't the most pretty or optimized, i plan to work on that part after i finish the language itself.
+
+### Your code can be compact too
+
+```py
+.f ( |x,y| -> (+ x y) )
+a := 2
+(print (f a 5))
+```
+
+but try to not end up with code like this:
+
+```py
+.f(|x,y|->(+x y))a:=2(print(f a 5))
+```
+
+### why is the design mixed between lisp-like and whatever that other style is
+
+I actualy spent 2 weeks trying to figure out how to parse expressions like 1 + 2 -2 + 2 / 3 * 2,
+but i gave up after a few stack overflows, infinite loops and weird results.
+
+I then switched to a new syntax, "+(x,y)", but after a few tests, i realized that it got pretty similar to the lisp-like syntax after some nesting, so i just switched to lisp-like.
 
 ## how to use this code?
 
