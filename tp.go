@@ -152,8 +152,6 @@ func (tp *Transpiler) ret() (string, error) {
 		return "", errors.New("not a return statement: error parsing expression")
 	}
 
-	fmt.Println(tp.ctoken())
-
 	output += expr
 
 	return output, nil
@@ -353,13 +351,15 @@ func (tp *Transpiler) call() (string, error) {
 				tp.advance(1)
 				tok = tp.ctoken()
 
-				if tok.tokTy != cComma {
+				if tok.tokTy == cEOF {
+					return "", errors.New("general error (in tp.call): unclosed (")
+				}
+
+				if tok.tokTy == cRparen {
 					break
 				}
 
 				output += op
-
-				tp.advance(1)
 			}
 
 			if argcount < 2 {
@@ -367,10 +367,6 @@ func (tp *Transpiler) call() (string, error) {
 			}
 
 			tok = tp.ctoken()
-
-			if tok.tokTy != cRparen {
-				return "", errors.New("not a function call: missing closing paren")
-			}
 
 			output += ")"
 
@@ -400,13 +396,15 @@ func (tp *Transpiler) call() (string, error) {
 			tp.advance(1)
 			tok = tp.ctoken()
 
-			if tok.tokTy != cComma {
+			if tok.tokTy == cEOF {
+				return "", errors.New("general error (in tp.call): unclosed (")
+			}
+
+			if tok.tokTy == cRparen {
 				break
 			}
 
 			output += ","
-
-			tp.advance(1)
 		}
 	}
 
@@ -440,11 +438,11 @@ func (tp Transpiler) ctoken() Token {
 
 }
 func (tp Transpiler) err(where string, msg string) {
-	if !haderror {
-		haderror = true
-		fmt.Printf("had error on %s, line %d, col %d\n%s\n",
-			where, tp.ctoken().line+1, tp.ctoken().col+1, msg)
-	}
+	//if !haderror {
+	haderror = true
+	fmt.Printf("had error on %s, line %d, col %d\n%s\n",
+		where, tp.ctoken().line+1, tp.ctoken().col+1, msg)
+	//}
 }
 
 func (tp *Transpiler) rfwo(fns []parserFn) (string, error) {
@@ -472,5 +470,7 @@ func (tp *Transpiler) rfwo(fns []parserFn) (string, error) {
 	}
 
 	tp.err("rfwo", "no matching pfn")
-	panic(last)
+	tp.err("rfwo", "last: "+last.Error())
+
+	return "", errors.New("error on rfwo")
 }
