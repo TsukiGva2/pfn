@@ -64,7 +64,9 @@ but i gave up after a few stack overflows, infinite loops and weird results.
 
 I then switched to a new syntax, "+(x,y)", but after a few tests, i realized that it got pretty similar to the lisp-like syntax after some nesting, so i just switched to lisp-like.
 
-## how to use this code?
+# how to use this code?
+
+## running
 
 make sure you have go installed, i do not plan to distribute precompiled binaries or something,
 then clone the repo and run the code with
@@ -79,8 +81,10 @@ you can also run code from a file with
 
     $ go run . filename
 
-and if you want to just grab an executable, run
+## building
+
+build the code with
 
     $ go build .
 
-and you will have an executable file named pc
+and you will have an executable file named pfn

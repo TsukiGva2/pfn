@@ -470,7 +470,5 @@ func (tp *Transpiler) rfwo(fns []parserFn) (string, error) {
 	}
 
 	tp.err("rfwo", "no matching pfn")
-	tp.err("rfwo", "last: "+last.Error())
-
-	return "", errors.New("error on rfwo")
+	panic(last)
 }
