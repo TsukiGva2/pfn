@@ -439,7 +439,7 @@ func (tp Transpiler) ctoken() Token {
 }
 func (tp Transpiler) err(where string, msg string) {
 	//if !haderror {
-	haderror = true
+	//haderror = true
 	fmt.Printf("had error on %s, line %d, col %d\n%s\n",
 		where, tp.ctoken().line+1, tp.ctoken().col+1, msg)
 	//}

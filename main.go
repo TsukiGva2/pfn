@@ -7,7 +7,7 @@ import (
 	"os"
 )
 
-var haderror bool = false
+//var haderror bool = false
 
 func main() {
 	if len(os.Args) > 1 {
@@ -49,7 +49,7 @@ func repl() {
 			run(input)
 			line = ""
 			input = ""
-			haderror = false
+			//haderror = false
 		case "list":
 			fmt.Print(input)
 		case "auto":
@@ -61,7 +61,7 @@ func repl() {
 			if automode {
 				run(line)
 				input = ""
-				haderror = false
+				//haderror = false
 			} else {
 				input += line + "\n"
 			}
