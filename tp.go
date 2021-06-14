@@ -269,7 +269,7 @@ func (tp *Transpiler) variable() (string, error) {
 func (tp *Transpiler) expr() (string, error) {
 	// (call | literal)
 
-	fns := []parserFn{tp.call, tp.list, tp.literal}
+	fns := []parserFn{tp.call, tp.when, tp.list, tp.literal}
 	old := tp.current
 
 	for i := range fns {
@@ -386,7 +386,17 @@ func (tp *Transpiler) call() (string, error) {
 		fallthrough
 	case cMinus:
 		fallthrough
-	case cStar:
+	case cDoubleEq:
+		fallthrough
+	case cBangEq:
+		fallthrough
+	case cGt:
+		fallthrough
+	case cLt:
+		fallthrough
+	case cGtEq:
+		fallthrough
+	case cLtEq:
 		fallthrough
 	case cSlash:
 		isOp = true
@@ -498,6 +508,45 @@ func (tp *Transpiler) call() (string, error) {
 	}
 
 	output = fmt.Sprintf("%s(%s)", fname, args)
+
+	return output, nil
+}
+
+func (tp *Transpiler) when() (string, error) {
+	// "when" expr "do" code "end"
+	var output string
+	tok := tp.ctoken()
+
+	if tok.tokTy != cIdentifier || tok.lexeme != "when" {
+		return "", errors.New("not a when block: missing 'when'")
+	}
+
+	output += "if "
+
+	tp.advance(1)
+
+	expr, err := tp.expr()
+
+	if err != nil {
+		return "", errors.New("not a when block: error parsing expression")
+	}
+
+	output += expr
+
+	tp.advance(1)
+	tok = tp.ctoken()
+
+	output += ":\n"
+
+	if tok.tokTy != cIdentifier || tok.lexeme != "do" {
+		return "", errors.New("not a when block: no 'do'")
+	}
+
+	tp.advance(1)
+
+	code := tp.code(cEnd, tp.ret)
+
+	output += code
 
 	return output, nil
 }

@@ -28,6 +28,7 @@ const (
 	cString
 	cArrow
 	cNumber
+	cEnd
 	cBAnd
 	cBOr
 	cAnd
@@ -258,6 +259,11 @@ func (s *Scanner) identifier() Token {
 	}
 
 	ty := cIdentifier
+
+	txt := s.text[s.start:s.current]
+	if txt == "end" {
+		return s.partialTok(cEnd)
+	}
 
 	return s.partialTok(ty)
 }

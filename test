@@ -33,10 +33,10 @@ def pfn_abs_1(*args):
 		raise ArgcountError('too few arguments for function abs_1')
 	x = args[0]
 	if (x<0):
-		return -x
+			return -x
 	
 	return x
 
 print(__pfn_call([pfn_abs,pfn_abs_1], [0]))
-print(__pfn_call([pfn_abs,pfn_abs_1], [-4]))
 print(__pfn_call([pfn_abs,pfn_abs_1], [9]))
+
