@@ -25,7 +25,7 @@ here you go.
 
 a:=2
 
-print(f(a,5))
+(print (f a 5))
 ```
 
 this transpiles to its equivalent python code
