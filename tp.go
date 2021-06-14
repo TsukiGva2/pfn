@@ -196,7 +196,7 @@ func (tp *Transpiler) variable() (string, error) {
 func (tp *Transpiler) expr() (string, error) {
 	// (call | literal)
 
-	fns := []parserFn{tp.grouping, tp.call, tp.list, tp.literal}
+	fns := []parserFn{tp.call, tp.list, tp.literal}
 	old := tp.current
 
 	for i := range fns {
@@ -291,12 +291,21 @@ func (tp *Transpiler) literal() (string, error) {
 }
 
 func (tp *Transpiler) call() (string, error) {
-	// id "(" (expr ("," expr)*)? ")"
+	// "(" id (expr ("," expr)*)? ")"
 
 	var isOp bool
 	var output string
 
 	tok := tp.ctoken()
+
+	if tok.tokTy != cLparen {
+		return "", errors.New("not a function call: no opening paren")
+	}
+
+	output += "("
+
+	tp.advance(1)
+	tok = tp.ctoken()
 
 	switch tok.tokTy {
 	case cIdentifier:
@@ -327,44 +336,48 @@ func (tp *Transpiler) call() (string, error) {
 		//tp.advance(1)
 		//tok = tp.ctoken()
 
-		//if tok.tokTy != cRparen {
+		if tok.tokTy != cRparen {
 
-		argcount := 0
+			argcount := 0
 
-		for {
-			expr, err := tp.expr()
+			for {
+				expr, err := tp.expr()
 
-			if err != nil {
-				return "", errors.New("not a function call: error parsing arguments")
+				if err != nil {
+					return "", errors.New("not a function call: error parsing arguments")
+				}
+
+				output += expr
+				argcount++
+
+				tp.advance(1)
+				tok = tp.ctoken()
+
+				if tok.tokTy != cComma {
+					break
+				}
+
+				output += op
+
+				tp.advance(1)
 			}
 
-			output += expr
-			argcount++
+			if argcount < 2 {
+				return "", errors.New("not a function call: not enough arguments to function " + op)
+			}
 
-			tp.advance(1)
 			tok = tp.ctoken()
 
-			if tok.tokTy != cComma {
-				break
+			if tok.tokTy != cRparen {
+				return "", errors.New("not a function call: missing closing paren")
 			}
 
-			output += op
+			output += ")"
 
-			tp.advance(1)
+			return output, nil
 		}
 
-		if argcount < 2 {
-			return "", errors.New("not a function call: not enough arguments to function " + op)
-		}
-
-		/*if tok.tokTy != cRparen {
-			return "", errors.New("not a function call: missing closing paren")
-		}*/
-
-		return output, nil
-		//}
-
-		//return "", errors.New("not a function call: not enough arguments to function " + op)
+		return "", errors.New("not a function call: not enough arguments to function " + op)
 	}
 
 	output += tok.lexeme
@@ -372,14 +385,7 @@ func (tp *Transpiler) call() (string, error) {
 	tp.advance(1)
 	tok = tp.ctoken()
 
-	if tok.tokTy != cLparen {
-		return "", errors.New("not a function call: missing opening paren")
-	}
-
 	output += "("
-
-	tp.advance(1)
-	tok = tp.ctoken()
 
 	if tok.tokTy != cRparen {
 		for {
@@ -410,40 +416,7 @@ func (tp *Transpiler) call() (string, error) {
 		return "", errors.New("not a function call: missing closing )")
 	}
 
-	output += ")"
-
-	fmt.Println(tp.ctoken())
-
-	return output, nil
-}
-
-func (tp *Transpiler) grouping() (string, error) {
-	// "(" expr ")"
-
-	var output string
-
-	tok := tp.ctoken()
-
-	if tok.tokTy != cLparen {
-		return "", errors.New("not a parenthesized expr at all, it even misses the opening paren")
-	}
-
-	tp.advance(1)
-
-	output += "("
-	expr, err := tp.expr()
-
-	if err != nil {
-		return "", errors.New("on grouping: error parsing expr")
-	}
-
-	tok = tp.ctoken()
-
-	if tok.tokTy != cRparen {
-		return "", errors.New("not a parenthesized expr: no matching )")
-	}
-
-	output += expr + ")"
+	output += "))"
 
 	return output, nil
 }

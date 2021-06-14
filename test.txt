@@ -1,0 +1,5 @@
+.fn (
+    |List|
+
+    -> (/ (sum List), (len List))
+)
