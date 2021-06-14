@@ -44,7 +44,7 @@ func (tp *Transpiler) start() {
 	pfncall += "	broke=False\n"
 	pfncall += "	for f in p:\n"
 	pfncall += "		try:\n"
-	pfncall += "			result=f(args)\n"
+	pfncall += "			result=f(*args)\n"
 	pfncall += "		except (UnmatchedError, ArgcountError):\n"
 	pfncall += "			continue\n"
 	pfncall += "		broke=True\n\n"
@@ -491,7 +491,7 @@ func (tp *Transpiler) call() (string, error) {
 	f, exists := fns[fname]
 
 	if exists {
-		output = fmt.Sprintf("__pfn_call([%s], %s)", strings.Join(f, ","), args)
+		output = fmt.Sprintf("__pfn_call([%s], [%s])", strings.Join(f, ","), args)
 		//output = fmt.Sprintf("broke=False\nfor f in [%v]:\n\ttry:\n\t\tf(%s)\n\texcept (UnmatchedError, ArgcountError):\n\t\tcontinue\n\tbroke=True\n\tbreak\n\nif not broke:\n\traise Exception('no matching function')\n", strings.Join(f, ","), args)
 
 		return output, nil
