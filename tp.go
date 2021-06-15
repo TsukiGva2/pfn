@@ -88,7 +88,11 @@ func (tp *Transpiler) code(end int, extra ...parserFn) string {
 		lines := strings.Split(res, "\n")
 
 		for i := range lines {
-			output += strings.Repeat("\t", ident) + lines[i] + "\n"
+			if !strings.HasPrefix(lines[i], "\t") {
+				output += strings.Repeat("\t", ident) + lines[i] + "\n"
+			} else {
+				output += lines[i] + "\n"
+			}
 		}
 
 		tp.advance(1)
@@ -608,7 +612,9 @@ func (tp *Transpiler) when() (string, error) {
 
 	tp.advance(1)
 
+	ident++
 	code := tp.code(cEnd, tp.ret)
+	ident--
 
 	output += code
 
