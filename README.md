@@ -92,6 +92,28 @@ but i gave up after a few stack overflows, infinite loops and weird results.
 
 I then switched to a new syntax, "+(x,y)", but after a few tests, i realized that it got pretty similar to the lisp-like syntax after some nesting, so i just switched to lisp-like.
 
+### and here is a more complex example showing most of the language's features
+
+```py
+# return the square root of a given number
+
+py { import math }
+
+.iSqrt(|0|->"undefined") # return "undefined" when called with 0
+.iSqrt(|1|->1)
+.iSqrt(|x|
+  when (< x 0) do
+    -> "no real sqrt"
+  end
+  
+  -> (/ 1 (math.sqrt x))
+)
+
+x:=(input "type a number: ")
+
+(print (iSqrt (int x)))
+```
+
 # how to use this code?
 
 ## running
