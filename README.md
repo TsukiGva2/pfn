@@ -24,7 +24,7 @@ promise.
 
 here you go.
 
-```py
+```ruby
 .f (
   |x,y|
 
@@ -75,7 +75,7 @@ The output code isn't the most pretty or optimized, i plan to work on that part 
 
 ### Your code can be compact too
 
-```py
+```ruby
 .f ( |x,y| -> (+ x y) )
 a := 2
 (print (f a 5))
@@ -83,7 +83,7 @@ a := 2
 
 but try to not end up with code like this:
 
-```py
+```ruby
 .f(|x,y|->(+x y))a:=2(print(f a 5))
 ```
 
@@ -96,7 +96,7 @@ I then switched to a new syntax, "+(x,y)", but after a few tests, i realized tha
 
 ### and here is a more complex example showing most of the language's features
 
-```py
+```ruby
 # return the square root of a given number
 
 py { import math }
