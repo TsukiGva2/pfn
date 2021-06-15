@@ -70,7 +70,7 @@ func (tp *Transpiler) code(end int, extra ...parserFn) string {
 	var output string
 
 	pfns = append(pfns, extra...)
-	pfns = append(pfns, tp.py, tp.fn, tp.variable, tp.expr)
+	pfns = append(pfns, tp.py, tp.fn, tp.when, tp.variable, tp.expr)
 
 	for {
 		tok := tp.ctoken()
@@ -274,7 +274,7 @@ func (tp *Transpiler) variable() (string, error) {
 func (tp *Transpiler) expr() (string, error) {
 	// (call | literal)
 
-	fns := []parserFn{tp.py, tp.call, tp.when, tp.list, tp.literal}
+	fns := []parserFn{tp.py, tp.call, tp.ewhen, tp.list, tp.literal}
 	old := tp.current
 
 	for i := range fns {
@@ -580,6 +580,63 @@ func (tp *Transpiler) call() (string, error) {
 	return output, nil
 }
 
+func (tp *Transpiler) ewhen() (string, error) {
+	// "when" expr "do" code "end"
+	var output string
+	tok := tp.ctoken()
+
+	if tok.tokTy != cIdentifier || tok.lexeme != "use" {
+		return "", errors.New("not a when expression: missing 'use'")
+	}
+
+	tp.advance(1)
+
+	expr, err := tp.expr()
+
+	if err != nil {
+		return "", errors.New("not a when expr: error parsing expression")
+	}
+
+	tp.advance(1)
+	tok = tp.ctoken()
+
+	if tok.tokTy != cIdentifier || tok.lexeme != "when" {
+		return "", errors.New("not a when expr: no 'when'")
+	}
+
+	tp.advance(1)
+
+	output += expr + " if "
+
+	expr, err = tp.expr()
+
+	if err != nil {
+		return "", errors.New("not a when expr: error parsing expression")
+	}
+
+	output += expr
+
+	tp.advance(1)
+	tok = tp.ctoken()
+
+	if tok.tokTy != cIdentifier || tok.lexeme != "else" {
+		return output, nil
+	}
+
+	tp.advance(1)
+	tok = tp.ctoken()
+
+	expr, err = tp.expr()
+
+	if err != nil {
+		return "", errors.New("not a when expr: error parsing expr")
+	}
+
+	output += " else " + expr
+
+	return output, nil
+}
+
 func (tp *Transpiler) when() (string, error) {
 	// "when" expr "do" code "end"
 	var output string
@@ -617,6 +674,40 @@ func (tp *Transpiler) when() (string, error) {
 	ident--
 
 	output += code
+
+	tp.advance(1)
+	tok = tp.ctoken()
+
+	if tok.tokTy == cIdentifier && tok.lexeme == "else" {
+		output += "else "
+
+		tp.advance(1)
+
+		expr, err := tp.expr()
+
+		if err != nil {
+			return "", errors.New("not an else block: error parsing expression")
+		}
+
+		output += expr
+
+		tp.advance(1)
+		tok = tp.ctoken()
+
+		output += ":\n"
+
+		if tok.tokTy != cIdentifier || tok.lexeme != "do" {
+			return "", errors.New("not a when block: no 'do'")
+		}
+
+		tp.advance(1)
+
+		ident++
+		code = tp.code(cEnd, tp.ret)
+		ident--
+
+		output += code
+	}
 
 	return output, nil
 }

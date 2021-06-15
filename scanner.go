@@ -152,6 +152,11 @@ begin:
 		return s.partialTok(cSlash)
 	case '"':
 		return s.getstr()
+	case 'f':
+		if s.match('"') {
+			return s.getstr()
+		}
+		return s.identifier()
 	case '\'':
 		return s.partialTok(cQuot)
 	case '#':
