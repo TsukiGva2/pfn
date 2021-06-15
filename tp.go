@@ -54,7 +54,6 @@ func (tp *Transpiler) start() {
 	pfncall += "	return result\n"
 
 	tp.output += pfncall
-
 	//tp.output = fmt.Sprintf("broke=False\nfor f in [%v]:\n\ttry:\n\t\tf(%s)\n\texcept (UnmatchedError, ArgcountError):\n\t\tcontinue\n\tbroke=True\n\tbreak\n\nif not broke:\n\traise Exception('no matching function')\n")
 
 	tp.run()
@@ -344,7 +343,56 @@ func (tp *Transpiler) list() (string, error) {
 		return "", errors.New("not a list: no closing >")
 	}
 
+	tp.advance(1)
+	tok = tp.ctoken()
+
 	output += t[1]
+
+	if tok.tokTy == cIdentifier && tok.lexeme == "where" {
+		tp.advance(1)
+		tok = tp.ctoken()
+
+		if tok.tokTy != cIdentifier {
+			return "", errors.New("not a list: error in 'where' clause, no identifier, did you mean 'where _'?")
+		}
+
+		v := tok.lexeme
+
+		tp.advance(1)
+		tok = tp.ctoken()
+
+		if tok.tokTy == cEqArrow {
+			tp.advance(1)
+			tok = tp.ctoken()
+
+			expr, err := tp.expr()
+
+			if err != nil {
+				return "", errors.New("not a list: (in 'where' clause) error parsing expr")
+			}
+
+			output = "[" + output + " for " + v + " in " + expr + "]"
+			return output, nil
+		}
+
+		if tok.tokTy != cAssignment {
+			return "", errors.New("not a list: error in 'where' clause, no ':=' or '=>'")
+		}
+
+		tp.advance(1)
+		tok = tp.ctoken()
+
+		expr, err := tp.expr()
+
+		if err != nil {
+			return "", errors.New("not a list: (in 'where' clause) error parsing expr")
+		}
+
+		output = "[" + output + " for " + v + " in " + "[" + expr + "]" + "][0]"
+		tp.advance(1)
+	}
+
+	tp.previous(1)
 
 	return output, nil
 }
@@ -399,6 +447,8 @@ func (tp *Transpiler) call() (string, error) {
 	case cPlus:
 		fallthrough
 	case cMinus:
+		fallthrough
+	case cStar:
 		fallthrough
 	case cDoubleEq:
 		fallthrough

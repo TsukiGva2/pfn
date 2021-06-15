@@ -35,6 +35,7 @@ const (
 	cOr
 	cEOF
 	cQuot
+	cEqArrow
 	cAssignment
 	cErr
 	cHat
@@ -140,7 +141,13 @@ begin:
 	case '!':
 		return s.partialTok(tern(s.match('='), cBangEq, cBang))
 	case '=':
-		return s.partialTok(tern(s.match('='), cDoubleEq, cEq))
+		if s.match('=') {
+			return s.partialTok(cDoubleEq)
+		}
+		if s.match('>') {
+			return s.partialTok(cEqArrow)
+		}
+		return s.partialTok(cEq)
 	case '/':
 		return s.partialTok(cSlash)
 	case '"':

@@ -17,10 +17,10 @@ exe "syn match dLispFn display '" . cLispFn . "'"
 
 syn region dPyBlock start="{" end="}"
 syn match dFunction "\(\.\)\@<=[a-zA-Z0-9]\+\(\s\{0,}(\)\@="
-syn match dOperator "->\|[.|]\|-\(\p\)\@=\|:="
+syn match dOperator "->\|[.|]\|-\(\p\)\@=\|:=\|=>"
 syn region dComment start="#" end="$"
 syn region dString start='"' end='"'
-syn keyword dKw when do end py
+syn keyword dKw when do end py where
 
 " Integer with - + or nothing in front
 syn match dNumber '\d\+'
