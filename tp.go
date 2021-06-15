@@ -633,8 +633,6 @@ func (tp *Transpiler) rfwo(fns []parserFn) (string, error) {
 			return res, nil
 		}
 
-		fmt.Println(err)
-
 		last = err
 		tp.current = old
 	}
