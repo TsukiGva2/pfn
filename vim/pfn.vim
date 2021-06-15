@@ -15,11 +15,12 @@ let cLispFn .=	'\@='
 
 exe "syn match dLispFn display '" . cLispFn . "'"
 
+syn region dPyBlock start="{" end="}"
 syn match dFunction "\(\.\)\@<=[a-zA-Z0-9]\+\(\s\{0,}(\)\@="
 syn match dOperator "->\|[.|]\|-\(\p\)\@=\|:="
 syn region dComment start="#" end="$"
 syn region dString start='"' end='"'
-syn keyword dKw when do end
+syn keyword dKw when do end py
 
 " Integer with - + or nothing in front
 syn match dNumber '\d\+'
@@ -43,4 +44,5 @@ hi def link dKw       Keyword
 hi def link dOperator Operator
 hi def link dString   String
 hi def link dNumber   Number
+hi def link dPyBlock  String
 
