@@ -288,20 +288,32 @@ func (tp *Transpiler) expr() (string, error) {
 }
 
 func (tp *Transpiler) list() (string, error) {
-	// "<" (expr ("," expr)*)? ">"
+	// "'"? "<" (expr ("," expr)*)? ">"
 
+	var t []string = []string{"[", "]"}
 	var output string
 
 	tok := tp.ctoken()
 
-	if tok.tokTy != cLt {
-		return "", errors.New("not a list: no opening <")
+	if tok.tokTy != cLt && tok.tokTy != cQuot {
+		return "", errors.New("not a list: no opening < or '<")
+	}
+
+	if tok.tokTy == cQuot {
+		tp.advance(1)
+		tok = tp.ctoken()
+
+		if tok.tokTy != cLt {
+			return "", errors.New("not a tuple: no < after quote")
+		}
+
+		t = []string{"(", ")"}
 	}
 
 	tp.advance(1)
 	tok = tp.ctoken()
 
-	output += "["
+	output += t[0]
 
 	if tok.tokTy != cGt {
 		for {
@@ -332,7 +344,7 @@ func (tp *Transpiler) list() (string, error) {
 		return "", errors.New("not a list: no closing >")
 	}
 
-	output += "]"
+	output += t[1]
 
 	return output, nil
 }

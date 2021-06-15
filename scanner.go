@@ -34,6 +34,7 @@ const (
 	cAnd
 	cOr
 	cEOF
+	cQuot
 	cAssignment
 	cErr
 	cHat
@@ -144,6 +145,8 @@ begin:
 		return s.partialTok(cSlash)
 	case '"':
 		return s.getstr()
+	case '\'':
+		return s.partialTok(cQuot)
 	case '#':
 		for s.peek() != '\n' && !s.isAtEnd() {
 			s.advance()
