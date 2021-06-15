@@ -2,6 +2,8 @@
 
 [![Build Status](https://travis-ci.com/TsukiGva2/pfn.svg?branch=main)](https://travis-ci.com/TsukiGva2/pfn)
 
+![](https://github.com/TsukiGva2/pfn/blob/0de9ef050a549a4e79815b346e3b7d502811fb2c/img/code.png)
+
 ## pfn is...
 
 a transpiled programming language i made while trying to learn parsers, it's still a work in progress.
