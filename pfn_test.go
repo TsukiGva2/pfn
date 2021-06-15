@@ -30,3 +30,7 @@ func TestPM(t *testing.T) {
 func TestSimple(t *testing.T) {
 	makeTest(t, "simple")
 }
+
+func TestImport(t *testing.T) {
+	makeTest(t, "import")
+}

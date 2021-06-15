@@ -71,7 +71,7 @@ func (tp *Transpiler) code(end int, extra ...parserFn) string {
 	var output string
 
 	pfns = append(pfns, extra...)
-	pfns = append(pfns, tp.fn, tp.variable, tp.expr)
+	pfns = append(pfns, tp.py, tp.fn, tp.variable, tp.expr)
 
 	for {
 		tok := tp.ctoken()
@@ -269,7 +269,7 @@ func (tp *Transpiler) variable() (string, error) {
 func (tp *Transpiler) expr() (string, error) {
 	// (call | literal)
 
-	fns := []parserFn{tp.call, tp.when, tp.list, tp.literal}
+	fns := []parserFn{tp.py, tp.call, tp.when, tp.list, tp.literal}
 	old := tp.current
 
 	for i := range fns {
@@ -547,6 +547,40 @@ func (tp *Transpiler) when() (string, error) {
 	code := tp.code(cEnd, tp.ret)
 
 	output += code
+
+	return output, nil
+}
+
+func (tp *Transpiler) py() (string, error) {
+	// "py" "{" any "}"
+	var output string
+
+	tok := tp.ctoken()
+
+	if tok.tokTy != cIdentifier || tok.lexeme != "py" {
+		return "", errors.New("not a python block: missing 'py' keyword")
+	}
+
+	tp.advance(1)
+	tok = tp.ctoken()
+
+	if tok.tokTy != cLbrace {
+		return "", errors.New("not a python block: missing opening brace")
+	}
+
+	tp.advance(1)
+	tok = tp.ctoken()
+
+	for tok.tokTy != cRbrace {
+		output += tok.lexeme + " "
+
+		tp.advance(1)
+		tok = tp.ctoken()
+
+		if tok.tokTy == cEOF {
+			return output, nil
+		}
+	}
 
 	return output, nil
 }

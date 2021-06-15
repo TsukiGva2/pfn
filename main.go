@@ -4,13 +4,20 @@ import (
 	"bufio"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"os"
 )
 
 //var haderror bool = false
 
+var outfile string = "out.py"
+
 func main() {
 	if len(os.Args) > 1 {
+		if len(os.Args) > 2 {
+			outfile = os.Args[2]
+		}
+
 		runFile(os.Args[1])
 		return
 	}
@@ -26,7 +33,13 @@ func runFile(f string) string {
 	}
 
 	code := string(cont)
-	t := run(code)
+	t := run(code, false)
+
+	err = ioutil.WriteFile(outfile, []byte(t.output), 0654)
+
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	return t.output
 }
@@ -46,7 +59,7 @@ func repl() {
 
 		switch line {
 		case "run":
-			run(input)
+			run(input, true)
 			line = ""
 			input = ""
 			//haderror = false
@@ -59,7 +72,7 @@ func repl() {
 			return
 		default:
 			if automode {
-				run(line)
+				run(line, true)
 				input = ""
 				//haderror = false
 			} else {
@@ -69,7 +82,7 @@ func repl() {
 	}
 }
 
-func run(code string) Transpiler {
+func run(code string, p bool) Transpiler {
 	sc := Scanner{code, 0, 0, 0}
 	tokens := sc.scanTokens()
 	//for i := range tokens {
@@ -78,7 +91,9 @@ func run(code string) Transpiler {
 	tp := Transpiler{0, tokens, ""}
 	tp.start()
 
-	fmt.Println(tp.output)
+	if p {
+		fmt.Print(tp.output)
+	}
 
 	return tp
 }

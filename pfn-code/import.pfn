@@ -1,0 +1,12 @@
+py {import math}
+
+.iSqrt(|0|->"undefined")
+.iSqrt(|1|->1)
+.iSqrt(|x|
+	when (< x 0) do
+		-> "no real roots"
+	end
+
+	-> (/ 1 (math.sqrt x))
+)
+
