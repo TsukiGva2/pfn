@@ -139,27 +139,29 @@ func (tp *Transpiler) fn() (string, error) {
 	tp.advance(1)
 	tok = tp.ctoken()
 
-	for {
-		if tok.tokTy != cIdentifier {
-			expr, err := tp.expr()
+	if tok.tokTy != cBOr {
+		for {
+			if tok.tokTy != cIdentifier {
+				expr, err := tp.expr()
 
-			if err != nil {
-				return "", errors.New("error parsing expr")
+				if err != nil {
+					return "", errors.New("not a function: error parsing expr")
+				}
+
+				args = append(args, argument{expr, tCompare})
+			} else {
+				args = append(args, argument{tok.lexeme, tNormal})
 			}
 
-			args = append(args, argument{expr, tCompare})
-		} else {
-			args = append(args, argument{tok.lexeme, tNormal})
+			tp.advance(1)
+
+			if tp.ctoken().tokTy != cComma {
+				break
+			}
+
+			tp.advance(1)
+			tok = tp.ctoken()
 		}
-
-		tp.advance(1)
-
-		if tp.ctoken().tokTy != cComma {
-			break
-		}
-
-		tp.advance(1)
-		tok = tp.ctoken()
 	}
 
 	tok = tp.ctoken()
@@ -607,7 +609,7 @@ func (tp Transpiler) err(where string, msg string) {
 	//if !haderror {
 	//haderror = true
 	fmt.Printf("had error on %s, line %d, col %d\n%s\n",
-		where, tp.ctoken().line+1, tp.ctoken().col+1, msg)
+		where, tp.ctoken().line+1, (tp.ctoken().col+1)/(tp.ctoken().line+1), msg)
 	//}
 }
 
@@ -630,6 +632,8 @@ func (tp *Transpiler) rfwo(fns []parserFn) (string, error) {
 		if err == nil {
 			return res, nil
 		}
+
+		fmt.Println(err)
 
 		last = err
 		tp.current = old

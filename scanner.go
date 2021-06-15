@@ -129,9 +129,9 @@ begin:
 	case '^':
 		return s.partialTok(cHat)
 	case '&':
-		return s.partialTok(tern(s.match('&'), cAnd, cBAnd))
+		return s.partialTok(cBAnd)
 	case '|':
-		return s.partialTok(tern(s.match('|'), cOr, cBOr))
+		return s.partialTok(cBOr)
 	case '>':
 		return s.partialTok(tern(s.match('='), cGtEq, cGt))
 	case '<':
