@@ -60,10 +60,10 @@ func (tp *Transpiler) start() {
 }
 
 func (tp *Transpiler) run() {
-	tp.output += tp.code(cEOF)
+	tp.output += tp.code(cEOF, "")
 }
 
-func (tp *Transpiler) code(end int, extra ...parserFn) string {
+func (tp *Transpiler) code(end int, alt string, extra ...parserFn) string {
 	// (fn | var | expr)*
 
 	var pfns []parserFn
@@ -75,7 +75,7 @@ func (tp *Transpiler) code(end int, extra ...parserFn) string {
 	for {
 		tok := tp.ctoken()
 
-		if tok.tokTy == end || tok.tokTy == cEOF {
+		if tok.tokTy == end || tok.tokTy == cEOF || (tok.tokTy == cIdentifier && tok.lexeme == alt) {
 			break
 		}
 
@@ -198,7 +198,7 @@ func (tp *Transpiler) fn() (string, error) {
 	tp.advance(1)
 
 	ident++
-	code += tp.code(cRparen, tp.ret)
+	code += tp.code(cRparen, "", tp.ret)
 	ident--
 
 	if exists {
@@ -670,40 +670,23 @@ func (tp *Transpiler) when() (string, error) {
 	tp.advance(1)
 
 	ident++
-	code := tp.code(cEnd, tp.ret)
+	code := tp.code(cEnd, "else", tp.ret)
 	ident--
 
 	output += code
 
-	tp.advance(1)
 	tok = tp.ctoken()
 
 	if tok.tokTy == cIdentifier && tok.lexeme == "else" {
-		output += "else "
-
-		tp.advance(1)
-
-		expr, err := tp.expr()
-
-		if err != nil {
-			return "", errors.New("not an else block: error parsing expression")
-		}
-
-		output += expr
+		output += "else"
 
 		tp.advance(1)
 		tok = tp.ctoken()
 
 		output += ":\n"
 
-		if tok.tokTy != cIdentifier || tok.lexeme != "do" {
-			return "", errors.New("not a when block: no 'do'")
-		}
-
-		tp.advance(1)
-
 		ident++
-		code = tp.code(cEnd, tp.ret)
+		code = tp.code(cEnd, "", tp.ret)
 		ident--
 
 		output += code
