@@ -32,7 +32,7 @@ def pfn_abs_1(*args):
 	if len(args) < 1:
 		raise ArgcountError('too few arguments for function abs_1')
 	x = args[0]
-	if (x<0):
+	if (x < 0):
 		return -x
 	
 	return x

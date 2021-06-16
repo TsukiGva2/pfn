@@ -40,8 +40,8 @@ def pfn_iSqrt_2(*args):
 	if len(args) < 1:
 		raise ArgcountError('too few arguments for function iSqrt_2')
 	x = args[0]
-	if (x<0):
+	if (x < 0):
 		return "no real roots"
 	
-	return (1/math.sqrt(x))
+	return (1 / math.sqrt(x))
 

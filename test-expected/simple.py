@@ -26,7 +26,7 @@ def pfn_f(*args):
 		raise ArgcountError('too few arguments for function f')
 	x = args[0]
 	y = args[1]
-	return (x+y)
+	return (x + y)
 
 a=2
 print(__pfn_call([pfn_f], [a,5]))

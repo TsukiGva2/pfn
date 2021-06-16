@@ -25,7 +25,7 @@ def pfn_avg(*args):
 	if len(args) < 1:
 		raise ArgcountError('too few arguments for function avg')
 	vect = args[0]
-	return (sum(vect)/len(vect))
+	return (sum(vect) / len(vect))
 
 arr=[1,2,3]
 print(__pfn_call([pfn_avg], [arr]))
