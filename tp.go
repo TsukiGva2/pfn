@@ -274,7 +274,7 @@ func (tp *Transpiler) variable() (string, error) {
 func (tp *Transpiler) expr() (string, error) {
 	// (call | literal)
 
-	fns := []parserFn{tp.py, tp.call, tp.ewhen, tp.list, tp.literal}
+	fns := []parserFn{tp.py, tp.call, tp.index, tp.ewhen, tp.list, tp.literal}
 	old := tp.current
 
 	for i := range fns {
@@ -849,6 +849,46 @@ func (tp *Transpiler) brk() (string, error) {
 	}
 
 	return "break", nil
+}
+
+func (tp *Transpiler) index() (string, error) {
+	// (id|list) ":" expr
+	var output string = ""
+	var literal string
+	tok := tp.ctoken()
+
+	if tok.tokTy != cIdentifier {
+		list, err := tp.list()
+
+		if err != nil {
+			return "", errors.New("not an index expr: no list or identifier")
+		}
+
+		literal = list
+	} else {
+		literal = tok.lexeme
+	}
+
+	output += literal
+
+	tp.advance(1)
+	tok = tp.ctoken()
+
+	if tok.tokTy != cColon {
+		return "", errors.New("not an index expr: no colon")
+	}
+
+	tp.advance(1)
+	tok = tp.ctoken()
+
+	expr, err := tp.expr()
+	if err != nil {
+		return "", errors.New("not an index expr: error parsing expr")
+	}
+
+	output += "[" + expr + "]"
+
+	return output, nil
 }
 
 // utils
