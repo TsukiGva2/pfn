@@ -10,9 +10,12 @@ const (
 	cLbrace
 	cRbrace
 	cComma
+	cEloop
 	cDot
 	cMinus
 	cPlus
+	cLAnd
+	cLOr
 	cSemicolon
 	cSlash
 	cStar
@@ -278,6 +281,18 @@ func (s *Scanner) identifier() Token {
 	txt := s.text[s.start:s.current]
 	if txt == "end" {
 		return s.partialTok(cEnd)
+	}
+
+	if txt == "where" || txt == "when" {
+		return s.partialTok(cEloop)
+	}
+
+	if txt == "and" {
+		return s.partialTok(cLAnd)
+	}
+
+	if txt == "or" {
+		return s.partialTok(cLOr)
 	}
 
 	return s.partialTok(ty)

@@ -70,12 +70,12 @@ func (tp *Transpiler) code(end int, alt string, extra ...parserFn) string {
 	var output string
 
 	pfns = append(pfns, extra...)
-	pfns = append(pfns, tp.py, tp.fn, tp.when, tp.variable, tp.expr)
+	pfns = append(pfns, tp.py, tp.fn, tp.loop, tp.when, tp.variable, tp.expr)
 
 	for {
 		tok := tp.ctoken()
 
-		if tok.tokTy == end || tok.tokTy == cEOF || (tok.tokTy == cIdentifier && tok.lexeme == alt) {
+		if tok.tokTy == end || tok.tokTy == cEOF || (tok.tokTy == cIdentifier && strings.Contains(alt, tok.lexeme)) {
 			break
 		}
 
@@ -352,7 +352,7 @@ func (tp *Transpiler) list() (string, error) {
 
 	output += t[1]
 
-	if tok.tokTy == cIdentifier && tok.lexeme == "where" {
+	if tok.tokTy == cEloop && tok.lexeme == "where" {
 		tp.advance(1)
 		tok = tp.ctoken()
 
@@ -433,6 +433,7 @@ func (tp *Transpiler) call() (string, error) {
 	// "(" id (expr ("," expr)*)? ")"
 
 	var isOp bool
+	var unary bool
 	var output string
 
 	tok := tp.ctoken()
@@ -445,9 +446,6 @@ func (tp *Transpiler) call() (string, error) {
 	tok = tp.ctoken()
 
 	switch tok.tokTy {
-	case cIdentifier:
-		isOp = false
-
 	case cPlus:
 		fallthrough
 	case cMinus:
@@ -460,6 +458,10 @@ func (tp *Transpiler) call() (string, error) {
 		fallthrough
 	case cGt:
 		fallthrough
+	case cLAnd:
+		fallthrough
+	case cLOr:
+		fallthrough
 	case cLt:
 		fallthrough
 	case cGtEq:
@@ -469,8 +471,39 @@ func (tp *Transpiler) call() (string, error) {
 	case cSlash:
 		isOp = true
 
+	case cIdentifier:
+		switch tok.lexeme {
+		case "not":
+			unary = true
+		default:
+			isOp = false
+		}
+
 	default:
 		return "", errors.New("not a function call: no operator")
+	}
+
+	if unary {
+		op := tok.lexeme
+		tp.advance(1)
+		tok = tp.ctoken()
+
+		expr, err := tp.expr()
+
+		if err != nil {
+			return "", errors.New("not a function call: error parsing expr")
+		}
+
+		tp.advance(1)
+		tok = tp.ctoken()
+
+		if tok.tokTy != cRparen {
+			return "", errors.New("not a function call: no closing paren")
+		}
+
+		output = "(" + op + " " + expr + ")"
+
+		return output, nil
 	}
 
 	if isOp {
@@ -512,7 +545,7 @@ func (tp *Transpiler) call() (string, error) {
 					break
 				}
 
-				output += op
+				output += " " + op + " "
 			}
 
 			if argcount < 1 {
@@ -600,7 +633,7 @@ func (tp *Transpiler) ewhen() (string, error) {
 	tp.advance(1)
 	tok = tp.ctoken()
 
-	if tok.tokTy != cIdentifier || tok.lexeme != "when" {
+	if tok.tokTy != cEloop || tok.lexeme != "when" {
 		return "", errors.New("not a when expr: no 'when'")
 	}
 
@@ -642,7 +675,7 @@ func (tp *Transpiler) when() (string, error) {
 	var output string
 	tok := tp.ctoken()
 
-	if tok.tokTy != cIdentifier || tok.lexeme != "when" {
+	if tok.tokTy != cEloop || tok.lexeme != "when" {
 		return "", errors.New("not a when block: missing 'when'")
 	}
 
@@ -727,6 +760,95 @@ func (tp *Transpiler) py() (string, error) {
 	}
 
 	return output, nil
+}
+
+func (tp *Transpiler) loop() (string, error) {
+	// "loop" code "where" id ("=>"|":=") expr
+	var output string
+	var lvar string
+
+	tok := tp.ctoken()
+
+	if tok.tokTy != cIdentifier || tok.lexeme != "loop" {
+		return "", errors.New("not a loop: no 'loop' keyword")
+	}
+
+	tp.advance(1)
+
+	ident++
+	code := tp.code(cEloop, "", tp.brk)
+	ident--
+
+	tok = tp.ctoken()
+
+	if tok.tokTy != cEloop || tok.lexeme != "where" {
+		if tok.tokTy == cEloop && tok.lexeme == "when" {
+			tp.advance(1)
+
+			expr, err := tp.expr()
+
+			if err != nil {
+				return "", errors.New("not a loop: error parsing expr")
+			}
+
+			output = fmt.Sprintf("while %s:\n%s", expr, code)
+			return output, nil
+		}
+
+		return "", errors.New("not a loop: no where or when")
+	}
+
+	tp.advance(1)
+	tok = tp.ctoken()
+
+	if tok.tokTy != cIdentifier {
+		return "", errors.New("not a loop: no identifier after where")
+	}
+
+	lvar = tok.lexeme
+
+	tp.advance(1)
+	tok = tp.ctoken()
+
+	if tok.tokTy == cAssignment {
+		tp.advance(1)
+
+		expr, err := tp.expr()
+
+		if err != nil {
+			return "", errors.New("not a loop: error parsing expr")
+		}
+
+		output = fmt.Sprintf("%s=%s\nwhile %s:\n%s", lvar, expr, lvar, code)
+		return output, nil
+	}
+
+	if tok.tokTy != cEqArrow {
+		return "", errors.New("not a loop: no '=>' or ':='")
+	}
+
+	tp.advance(1)
+	tok = tp.ctoken()
+
+	expr, err := tp.expr()
+
+	if err != nil {
+		return "", errors.New("not a loop: error parsing expr")
+	}
+
+	output = fmt.Sprintf("for %s in %s:\n%s", lvar, expr, code)
+
+	return output, nil
+}
+
+func (tp *Transpiler) brk() (string, error) {
+	tok := tp.ctoken()
+
+	if tok.tokTy != cIdentifier || tok.lexeme != "break" {
+		return "", errors.New("not break")
+	}
+
+	return "break", nil
 }
 
 // utils
