@@ -463,14 +463,6 @@ func (tp *Transpiler) call() (string, error) {
 		fallthrough
 	case cGt:
 		fallthrough
-	case cPlusEq:
-		fallthrough
-	case cMinusEq:
-		fallthrough
-	case cStarEq:
-		fallthrough
-	case cSlashEq:
-		fallthrough
 	case cLAnd:
 		fallthrough
 	case cLOr:
@@ -646,7 +638,7 @@ func (tp *Transpiler) ewhen() (string, error) {
 	tp.advance(1)
 	tok = tp.ctoken()
 
-	if tok.tokTy != cEloop || tok.lexeme != "when" {
+	if tok.tokTy != cIdentifier || tok.lexeme != "when" {
 		return "", errors.New("not a when expr: no 'when'")
 	}
 
@@ -666,6 +658,7 @@ func (tp *Transpiler) ewhen() (string, error) {
 	tok = tp.ctoken()
 
 	if tok.tokTy != cIdentifier || tok.lexeme != "else" {
+		tp.previous(1)
 		return output, nil
 	}
 
@@ -688,7 +681,7 @@ func (tp *Transpiler) when() (string, error) {
 	var output string
 	tok := tp.ctoken()
 
-	if tok.tokTy != cEloop || tok.lexeme != "when" {
+	if tok.tokTy != cIdentifier || tok.lexeme != "when" {
 		return "", errors.New("not a when block: missing 'when'")
 	}
 
@@ -795,7 +788,7 @@ func (tp *Transpiler) loop() (string, error) {
 	tok = tp.ctoken()
 
 	if tok.tokTy != cEloop || tok.lexeme != "where" {
-		if tok.tokTy == cEloop && tok.lexeme == "when" {
+		if tok.tokTy == cEloop && tok.lexeme == "while" {
 			tp.advance(1)
 
 			expr, err := tp.expr()

@@ -287,7 +287,7 @@ func (s *Scanner) identifier() Token {
 		return s.partialTok(cEnd)
 	}
 
-	if txt == "where" || txt == "when" {
+	if txt == "where" || txt == "while" {
 		return s.partialTok(cEloop)
 	}
 
