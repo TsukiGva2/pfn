@@ -241,24 +241,29 @@ func (tp *Transpiler) variable() (string, error) {
 	// id ":=" expr
 
 	var output string
+	old := tp.current
+	tok := tp.ctoken()
+
+	ind, err := tp.index()
+
+	if err != nil {
+		tp.current = old
+		if tok.tokTy != cIdentifier {
+			return "", errors.New("not a variable: no identifier/index expr")
+		}
+		ind = tok.lexeme
+	}
+
+	output += ind
 
 	tp.advance(1)
-	tok := tp.ctoken()
+	tok = tp.ctoken()
 
 	if tok.tokTy != cAssignment {
 		return "", errors.New("not a variable: no assignment happening at all")
 	}
 
-	tp.previous(1)
-	tok = tp.ctoken()
-
-	if tok.tokTy != cIdentifier {
-		return "", errors.New("not a variable: no identifier")
-	}
-
-	output += tok.lexeme
-
-	tp.advance(2)
+	tp.advance(1)
 
 	expr, err := tp.expr()
 
