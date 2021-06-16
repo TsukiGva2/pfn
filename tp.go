@@ -458,6 +458,14 @@ func (tp *Transpiler) call() (string, error) {
 		fallthrough
 	case cGt:
 		fallthrough
+	case cPlusEq:
+		fallthrough
+	case cMinusEq:
+		fallthrough
+	case cStarEq:
+		fallthrough
+	case cSlashEq:
+		fallthrough
 	case cLAnd:
 		fallthrough
 	case cLOr:

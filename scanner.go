@@ -30,6 +30,10 @@ const (
 	cIdentifier
 	cString
 	cArrow
+	cMinusEq
+	cPlusEq
+	cStarEq
+	cSlashEq
 	cNumber
 	cEnd
 	cBAnd
@@ -118,13 +122,13 @@ begin:
 	case '.':
 		return s.partialTok(cDot)
 	case '-':
-		return s.partialTok(tern(s.match('>'), cArrow, cMinus))
+		return s.partialTok(tern(s.match('>'), cArrow, tern(s.match('='), cMinusEq, cMinus)))
 	case '+':
-		return s.partialTok(cPlus)
+		return s.partialTok(tern(s.match('='), cPlusEq, cPlus))
 	case ';':
 		return s.partialTok(cSemicolon)
 	case '*':
-		return s.partialTok(cStar)
+		return s.partialTok(tern(s.match('='), cStarEq, cStar))
 	case '?':
 		return s.partialTok(cQuestion)
 	case '@':
@@ -152,7 +156,7 @@ begin:
 		}
 		return s.partialTok(cEq)
 	case '/':
-		return s.partialTok(cSlash)
+		return s.partialTok(tern(s.match('='), cSlashEq, cSlash))
 	case '"':
 		return s.getstr()
 	case 'f':
