@@ -39,27 +39,8 @@ a:=2
 this transpiles to its equivalent python code
 
 ```py
-class UnmatchedError(Exception):
-        pass
-
-class ArgcountError(Exception):
-        pass
-
-def __pfn_call(p, args):
-        result=None
-        broke=False
-        for f in p:
-                try:
-                        result=f(args)
-                except (UnmatchedError, ArgcountError):
-                        continue
-                broke=True
-
-                break
-        if not broke:
-                raise Exception('no matching function')
-
-        return result
+NOTE: before your code comes a big chunk of code that defines standard functions and utilities like __pfn_call
+...
 def pfn_f(*args):
         if len(args) < 2:
                 raise ArgcountError('too few arguments for function f')
