@@ -70,7 +70,7 @@ func (tp *Transpiler) code(end int, alt string, extra ...parserFn) string {
 	var output string
 
 	pfns = append(pfns, extra...)
-	pfns = append(pfns, tp.py, tp.fn, tp.loop, tp.when, tp.variable, tp.expr)
+	pfns = append(pfns, tp.py, tp.out, tp.fn, tp.loop, tp.when, tp.variable, tp.expr)
 
 	for {
 		tok := tp.ctoken()
@@ -895,6 +895,28 @@ func (tp *Transpiler) index() (string, error) {
 	output += "[" + expr + "]"
 
 	return output, nil
+}
+
+// dangerous language constructs
+
+func (tp *Transpiler) out() (string, error) {
+	tok := tp.ctoken()
+
+	if tok.tokTy != cIdentifier || tok.lexeme != "out!" {
+		return "", errors.New("not an out statement: no 'out!'")
+	}
+
+	tp.advance(1)
+
+	expr, err := tp.expr()
+
+	if err != nil {
+		return "", errors.New("not an out statement, error parsing expr")
+	}
+
+	tp.output = expr + "\n" + tp.output
+
+	return "", nil
 }
 
 // utils

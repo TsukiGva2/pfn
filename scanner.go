@@ -164,6 +164,8 @@ begin:
 			return s.getstr()
 		}
 		return s.identifier()
+	case '\\':
+		return s.getstr()
 	case '\'':
 		return s.partialTok(cQuot)
 	case '#':
@@ -276,7 +278,7 @@ func (s Scanner) isAlpha(c byte) bool {
 }
 
 func (s *Scanner) identifier() Token {
-	for s.isAlpha(s.peek()) || s.isDigit(s.peek()) || s.peek() == '.' || s.peek() == '_' {
+	for s.isAlpha(s.peek()) || s.isDigit(s.peek()) || s.peek() == '.' || s.peek() == '_' || s.peek() == '!' {
 		s.advance()
 	}
 
