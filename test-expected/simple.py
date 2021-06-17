@@ -21,6 +21,42 @@ def __pfn_call(p, args):
 		raise Exception('no matching function')
 
 	return result
+def pfn_fst(*args):
+	if len(args) < 1:
+		raise ArgcountError('too few arguments for function fst')
+	if [] != args[0]:
+		raise UnmatchedError('unmatched')
+	 raise Exception("cannot call fst on empty list") 
+
+def pfn_fst_1(*args):
+	if len(args) < 1:
+		raise ArgcountError('too few arguments for function fst_1')
+	list = args[0]
+	return list[0]
+
+def pfn_snd(*args):
+	if len(args) < 1:
+		raise ArgcountError('too few arguments for function snd')
+	if [] != args[0]:
+		raise UnmatchedError('unmatched')
+	 raise Exception("cannot call snd on empty list") 
+
+def pfn_snd_1(*args):
+	if len(args) < 1:
+		raise ArgcountError('too few arguments for function snd_1')
+	list = args[0]
+	if (len(list) < 2):
+		 raise Exception("cannot call snd on list with length < 2") 
+	
+	return list[1]
+
+def pfn_MODEL(*args):
+	if len(args) < 1:
+		raise ArgcountError('too few arguments for function MODEL')
+	name = args[0]
+	exec(("class " + name + ":\n" + "\tpass"),globals())
+
+__pfn_call([pfn_MODEL], ["Rect"])
 def pfn_f(*args):
 	if len(args) < 2:
 		raise ArgcountError('too few arguments for function f')

@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"flag"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -10,19 +11,24 @@ import (
 
 //var haderror bool = false
 
-var outfile string = "out.py"
+var outfile string
+var libdir string
 
 func main() {
-	if len(os.Args) > 1 {
-		if len(os.Args) > 2 {
-			outfile = os.Args[2]
-		}
+	var filename string
 
-		runFile(os.Args[1])
+	flag.StringVar(&filename, "c", "", "file name to compile")
+	flag.StringVar(&outfile, "o", "out.py", "out file name")
+	flag.StringVar(&libdir, "l", "lib/", "path to libraries dir")
+
+	flag.Parse()
+
+	if filename == "" {
+		repl()
 		return
 	}
 
-	repl()
+	runFile(filename)
 }
 
 func runFile(f string) string {
@@ -83,6 +89,14 @@ func repl() {
 }
 
 func run(code string, p bool) Transpiler {
+	cont, err := ioutil.ReadFile(libdir + "prelude.pfn")
+
+	if err != nil {
+		panic(err)
+	}
+
+	code = string(cont) + "\n\n" + code
+
 	sc := Scanner{code, 0, 0, 0, false}
 	tokens := sc.scanTokens()
 	//for i := range tokens {

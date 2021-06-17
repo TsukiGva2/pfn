@@ -16,27 +16,7 @@
 )
 
 
-#.MODEL (|name|
-#	(exec (+ "class " name ":\n" "\tpass") (globals))
-#)
-
-$.MODEL (|name|
-	out! py {
-class name:
-	pass
-	}
-	end
-)
-
-$.impl (|name, code|
-	.name (code)
-)
-
-(MODEL [Rect])
-
-(impl [Rect.__init__]
-			[|self, x|
-				self.x := x
-			]
+.MODEL (|name|
+	(exec (+ "class " name ":\n" "\tpass") (globals))
 )
 
