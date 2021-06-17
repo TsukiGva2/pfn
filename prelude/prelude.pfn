@@ -15,9 +15,17 @@
 	-> list:1
 )
 
-.MODEL (|name|
-	(exec (+ "class " name ":\n" "\tpass") (globals))
+
+#.MODEL (|name|
+#	(exec (+ "class " name ":\n" "\tpass") (globals))
+#)
+
+$.MODEL (|name|
+	py {
+class name:
+	pass
+}
 )
 
-(MODEL Rect)
+(MODEL "Rect")
 

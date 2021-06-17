@@ -417,8 +417,11 @@ func (tp *Transpiler) literal() (string, error) {
 	case cString:
 		break
 	case cIdentifier:
-		break
+		f, exists := fns[tok.lexeme]
 
+		if exists {
+			tok.lexeme = fmt.Sprintf("(lambda *args: __pfn_call([%s], args))", strings.Join(f, ","))
+		}
 	case cMinus:
 		tp.advance(1)
 		lit, err := tp.literal()
@@ -747,23 +750,11 @@ func (tp *Transpiler) py() (string, error) {
 	tp.advance(1)
 	tok = tp.ctoken()
 
-	if tok.tokTy != cLbrace {
-		return "", errors.New("not a python block: missing opening brace")
+	if tok.tokTy != cString {
+		return "", errors.New("not a python block: missing string")
 	}
 
-	tp.advance(1)
-	tok = tp.ctoken()
-
-	for tok.tokTy != cRbrace {
-		output += tok.lexeme + " "
-
-		tp.advance(1)
-		tok = tp.ctoken()
-
-		if tok.tokTy == cEOF {
-			return output, nil
-		}
-	}
+	output += tok.literal.(string)
 
 	return output, nil
 }

@@ -114,9 +114,7 @@ begin:
 	case ')':
 		return s.partialTok(cRparen)
 	case '{':
-		return s.partialTok(cLbrace)
-	case '}':
-		return s.partialTok(cRbrace)
+		return s.getstr('}')
 	case ',':
 		return s.partialTok(cComma)
 	case '.':
@@ -158,14 +156,12 @@ begin:
 	case '/':
 		return s.partialTok(tern(s.match('='), cSlashEq, cSlash))
 	case '"':
-		return s.getstr()
+		return s.getstr('"')
 	case 'f':
 		if s.match('"') {
-			return s.getstr()
+			return s.getstr('"')
 		}
 		return s.identifier()
-	case '\\':
-		return s.getstr()
 	case '\'':
 		return s.partialTok(cQuot)
 	case '#':
@@ -230,8 +226,8 @@ func (s Scanner) peek() byte {
 	return s.text[s.current]
 }
 
-func (s *Scanner) getstr() Token {
-	for s.peek() != '"' && !s.isAtEnd() {
+func (s *Scanner) getstr(end byte) Token {
+	for s.peek() != end && !s.isAtEnd() {
 		if s.peek() == '\n' {
 			s.line++
 		}
