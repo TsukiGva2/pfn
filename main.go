@@ -83,8 +83,6 @@ func repl() {
 }
 
 func run(code string, p bool) Transpiler {
-	code = runMeta(code)
-
 	sc := Scanner{code, 0, 0, 0, false}
 	tokens := sc.scanTokens()
 	//for i := range tokens {

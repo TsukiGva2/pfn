@@ -899,13 +899,9 @@ func (tp *Transpiler) out() (string, error) {
 
 	tp.advance(1)
 
-	expr, err := tp.expr()
+	code := tp.code(cEnd, "")
 
-	if err != nil {
-		return "", errors.New("not an out statement, error parsing expr")
-	}
-
-	tp.output = expr + "\n" + tp.output
+	tp.output = code + "\n" + tp.output
 
 	return "", nil
 }

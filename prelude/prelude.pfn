@@ -21,11 +21,22 @@
 #)
 
 $.MODEL (|name|
-	py {
+	out! py {
 class name:
 	pass
-}
+	}
+	end
 )
 
-(MODEL "Rect")
+$.impl (|name, code|
+	.name (code)
+)
+
+(MODEL [Rect])
+
+(impl [Rect.__init__]
+			[|self, x|
+				self.x := x
+			]
+)
 
