@@ -8,6 +8,7 @@ const (
 	cLparen = iota
 	cRparen
 	cLbrace
+	cSPC
 	cRbrace
 	cComma
 	cEloop
@@ -20,6 +21,7 @@ const (
 	cSlash
 	cStar
 	cBang
+	cDol
 	cBangEq
 	cEq
 	cDoubleEq
@@ -82,6 +84,7 @@ type Scanner struct {
 	start   int
 	current int
 	line    int
+	kpunct  bool
 }
 
 func (s *Scanner) scanTokens() []Token {
@@ -137,6 +140,8 @@ begin:
 		return s.partialTok(cHat)
 	case '&':
 		return s.partialTok(cBAnd)
+	case '$':
+		return s.partialTok(cDol)
 	case '|':
 		return s.partialTok(cBOr)
 	case '>':
@@ -170,10 +175,14 @@ begin:
 		}
 		s.start = s.current
 		goto begin
+	case ' ':
+		if !s.kpunct {
+			s.start = s.current
+			goto begin
+		}
+		s.partialTok(cSPC)
 	case '\n':
 		s.line++
-		fallthrough
-	case ' ':
 		fallthrough
 	case '\r':
 		fallthrough
