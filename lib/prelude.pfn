@@ -1,15 +1,15 @@
-.fst (|<>| py { raise Exception("cannot call fst on empty list") })
+.fst (|<>| py {raise Exception("cannot call fst on empty list")})
 
 .fst (|list|
 	-> list:0
 )
 
 
-.snd (|<>| py { raise Exception("cannot call snd on empty list") })
+.snd (|<>| py {raise Exception("cannot call snd on empty list")})
 
 .snd (|list|
 	when (< (len list) 2) do
-		py { raise Exception("cannot call snd on list with length < 2") }
+		py {raise Exception("cannot call snd on list with length < 2")}
 	end
 
 	-> list:1
