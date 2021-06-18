@@ -112,7 +112,7 @@ type "auto". When you're done, type "exit" or CTRL-C
 
 you can also run code from a file with
 
-    $ go run . filename
+    $ go run . -c filename
 
 ## building
 
