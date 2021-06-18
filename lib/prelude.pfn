@@ -20,3 +20,8 @@
 	(exec (+ "class " name ":\n" "\tpass") (globals))
 )
 
+
+.IMPL (|name, fn|
+	(exec (+ name "." fn " = " "pfn_" fn "at" name) (globals))
+)
+

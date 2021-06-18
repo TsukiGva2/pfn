@@ -2,6 +2,7 @@ package main
 
 import (
 	"strconv"
+	"strings"
 )
 
 const (
@@ -283,13 +284,18 @@ func (s Scanner) isAlpha(c byte) bool {
 }
 
 func (s *Scanner) identifier() Token {
-	for s.isAlpha(s.peek()) || s.isDigit(s.peek()) || s.peek() == '.' || s.peek() == '_' || s.peek() == '!' {
+	for s.isAlpha(s.peek()) || s.isDigit(s.peek()) || s.peek() == '.' || s.peek() == '_' || s.peek() == '!' || s.peek() == '@' {
 		s.advance()
 	}
 
 	ty := cIdentifier
 
 	txt := s.text[s.start:s.current]
+
+	if strings.Contains(txt, "@") {
+		return Token{cIdentifier, strings.ReplaceAll(txt, "@", "at"), nil, s.line, s.current}
+	}
+
 	if txt == "end" {
 		return s.partialTok(cEnd)
 	}
