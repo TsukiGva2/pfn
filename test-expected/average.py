@@ -21,6 +21,55 @@ def __pfn_call(p, args):
 		raise Exception('no matching function')
 
 	return result
+def pfn_Fst(*args):
+	if len(args) < 1:
+		raise ArgcountError('too few arguments for function Fst')
+	if [] != args[0]:
+		raise UnmatchedError('unmatched')
+	raise Exception("cannot call fst on empty list")
+
+def pfn_Fst_1(*args):
+	if len(args) < 1:
+		raise ArgcountError('too few arguments for function Fst_1')
+	list = args[0]
+	return list[0]
+
+def pfn_Snd(*args):
+	if len(args) < 1:
+		raise ArgcountError('too few arguments for function Snd')
+	if [] != args[0]:
+		raise UnmatchedError('unmatched')
+	raise Exception("cannot call snd on empty list")
+
+def pfn_Snd_1(*args):
+	if len(args) < 1:
+		raise ArgcountError('too few arguments for function Snd_1')
+	list = args[0]
+	if (len(list) < 2):
+		raise Exception("cannot call snd on list with length < 2")
+	
+	return list[1]
+
+def pfn_Class(*args):
+	if len(args) < 1:
+		raise ArgcountError('too few arguments for function Class')
+	name = args[0]
+	exec(("class " + name + ":\n" + "\tdef define(self, m):\n\t\texec('self.' + m + ' = ' + 'pfn_' + m + 'at" + name + "')\n"),globals())
+
+def pfn_Assoc(*args):
+	if len(args) < 2:
+		raise ArgcountError('too few arguments for function Assoc')
+	k = args[0]
+	v = args[1]
+	if (len(k) != len(v)):
+		raise Exception("number of keys must match number of values")
+	
+	a=dict()
+	for i,val in enumerate(k):
+		a[val]=v[i]
+	
+	return a
+
 def pfn_avg(*args):
 	if len(args) < 1:
 		raise ArgcountError('too few arguments for function avg')
