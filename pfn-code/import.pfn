@@ -9,4 +9,3 @@ py {import math}
 
 	-> (/ 1 (math.sqrt x))
 )
-

@@ -6,13 +6,15 @@ import (
 )
 
 func makeTest(t *testing.T, filename string) {
+	libdir = "lib/"
+
 	data, err := ioutil.ReadFile("test-expected/" + filename + ".py")
 	if err != nil {
 		t.Error("error opening file")
 		return
 	}
 
-	out := runFile("pfn-code/" + filename + ".pfn")
+	out := runFile("pfn-code/"+filename+".pfn", false)
 
 	if string(data) != out {
 		t.Errorf("error, expected:\n%s\ngot:\n%s\n", string(data), out)

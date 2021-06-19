@@ -28,10 +28,10 @@ func main() {
 		return
 	}
 
-	runFile(filename)
+	runFile(filename, true)
 }
 
-func runFile(f string) string {
+func runFile(f string, w bool) string {
 	cont, err := ioutil.ReadFile(f)
 
 	if err != nil {
@@ -41,7 +41,9 @@ func runFile(f string) string {
 	code := string(cont)
 	t := run(code, false)
 
-	err = ioutil.WriteFile(outfile, []byte(t.output), 0654)
+	if w {
+		err = ioutil.WriteFile(outfile, []byte(t.output), 0654)
+	}
 
 	if err != nil {
 		log.Fatal(err)
