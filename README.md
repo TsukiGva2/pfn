@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.com/TsukiGva2/pfn.svg?branch=main)](https://travis-ci.com/TsukiGva2/pfn)
 
-![](https://github.com/TsukiGva2/pfn/blob/0de9ef050a549a4e79815b346e3b7d502811fb2c/img/code.png)
+![](https://github.com/TsukiGva2/pfn/blob/17418d6471f37c9a8c25124e5d54465024955a6b/img/assoc.png)
 
 ## pfn is...
 
