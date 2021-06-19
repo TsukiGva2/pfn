@@ -1,13 +1,13 @@
-.fst (|<>| py {raise Exception("cannot call fst on empty list")})
+.Fst (|<>| py {raise Exception("cannot call fst on empty list")})
 
-.fst (|list|
+.Fst (|list|
 	-> list:0
 )
 
 
-.snd (|<>| py {raise Exception("cannot call snd on empty list")})
+.Snd (|<>| py {raise Exception("cannot call snd on empty list")})
 
-.snd (|list|
+.Snd (|list|
 	when (< (len list) 2) do
 		py {raise Exception("cannot call snd on list with length < 2")}
 	end
@@ -16,12 +16,25 @@
 )
 
 
-.MODEL (|name|
-	(exec (+ "class " name ":\n" "\tpass") (globals))
+.Class (|name|
+	(exec (+ "class " name ":\n" "\tdef define(self, m):\n\t\texec('self.' + m + ' = ' + 'pfn_' + m + 'at" name "')\n") (globals))
 )
 
-
-.IMPL (|name, fn|
+.AttachMethod (|name, fn|
 	(exec (+ name "." fn " = " "pfn_" fn "at" name) (globals))
+)
+
+.Assoc (|k, v|
+	when (!= (len k) (len v)) do
+		py{raise Exception("number of keys must match number of values")}
+	end
+
+	a:=(dict)
+
+	loop
+		a:val:=v:i
+	where i,val => (enumerate k)
+
+	-> a
 )
 

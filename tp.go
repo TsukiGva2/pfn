@@ -760,7 +760,7 @@ func (tp *Transpiler) py() (string, error) {
 }
 
 func (tp *Transpiler) loop() (string, error) {
-	// "loop" code "where" id ("=>"|":=") expr
+	// "loop" code "where" id ("," id)* ("=>"|":=") expr
 	var output string
 	var lvar string
 
@@ -798,14 +798,25 @@ func (tp *Transpiler) loop() (string, error) {
 	tp.advance(1)
 	tok = tp.ctoken()
 
-	if tok.tokTy != cIdentifier {
-		return "", errors.New("not a loop: no identifier after where")
+	for {
+		if tok.tokTy != cIdentifier {
+			return "", errors.New("not a loop: no identifier after where or comma")
+		}
+
+		lvar += tok.lexeme
+
+		tp.advance(1)
+		tok = tp.ctoken()
+
+		if tok.tokTy != cComma {
+			break
+		}
+
+		lvar += ","
+
+		tp.advance(1)
+		tok = tp.ctoken()
 	}
-
-	lvar = tok.lexeme
-
-	tp.advance(1)
-	tok = tp.ctoken()
 
 	if tok.tokTy == cAssignment {
 		tp.advance(1)
