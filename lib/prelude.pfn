@@ -20,10 +20,6 @@
 	(exec (+ "class " name ":\n" "\tdef define(self, m):\n\t\texec('self.' + m + ' = ' + 'pfn_' + m + 'at" name "')\n") (globals))
 )
 
-.AttachMethod (|name, fn|
-	(exec (+ name "." fn " = " "pfn_" fn "at" name) (globals))
-)
-
 .Assoc (|k, v|
 	when (!= (len k) (len v)) do
 		py{raise Exception("number of keys must match number of values")}
