@@ -80,7 +80,7 @@ I then switched to a new syntax, "+(x,y)", but after a few tests, i realized tha
 ```ruby
 # return the square root of a given number
 
-py { import math }
+py {import math}
 
 .iSqrt(|0|->"undefined") # return "undefined" when called with 0
 .iSqrt(|1|->1)
