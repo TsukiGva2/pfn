@@ -8,7 +8,7 @@ import (
 func makeTest(t *testing.T, filename string) {
 	libdir = "lib/"
 
-	data, err := ioutil.ReadFile("test-expected/" + filename + ".py")
+	data, err := ioutil.ReadFile("test-expected/"+filename+".py")
 	if err != nil {
 		t.Error("error opening file")
 		return
