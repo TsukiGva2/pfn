@@ -17,7 +17,7 @@
 
 
 .Class (|name|
-	(exec (+ "class " name ":\n" "\tdef define(self, m):\n\t\texec('self.' + m + ' = ' + 'pfn_' + m + 'at" name "')\n") (globals))
+	(exec (+ "class " name ":\n" "\tdef define(m):\n\t\texec('" name ".' + m + ' = ' + 'pfn_' + m + 'at" name "', globals())\n") (globals))
 )
 
 .Assoc (|k, v|
