@@ -1,4 +1,4 @@
-package pfn
+package github.com/TsukiGva2/pfn
 
 import (
 	"errors"
