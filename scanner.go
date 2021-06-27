@@ -1,4 +1,4 @@
-package main
+package pfn
 
 import (
 	"strconv"
@@ -24,6 +24,7 @@ const (
 	cBang
 	cDol
 	cBangEq
+	cT
 	cEq
 	cDoubleEq
 	cGt
@@ -145,6 +146,8 @@ begin:
 		return s.partialTok(cDol)
 	case '|':
 		return s.partialTok(cBOr)
+	case '~':
+		return s.partialTok(cT)
 	case '>':
 		return s.partialTok(tern(s.match('='), cGtEq, cGt))
 	case '<':

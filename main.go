@@ -1,4 +1,4 @@
-package main
+package pfn
 
 import (
 	"bufio"
@@ -39,17 +39,17 @@ func runFile(f string, w bool) string {
 	}
 
 	code := string(cont)
-	t := run(code, false)
+	t := Run(code, false)
 
 	if w {
-		err = ioutil.WriteFile(outfile, []byte(t.output), 0654)
+		err = ioutil.WriteFile(outfile, []byte(t.Output), 0654)
 	}
 
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	return t.output
+	return t.Output
 }
 
 func repl() {
@@ -67,7 +67,7 @@ func repl() {
 
 		switch line {
 		case "run":
-			run(input, true)
+			Run(input, true)
 			line = ""
 			input = ""
 			//haderror = false
@@ -80,7 +80,7 @@ func repl() {
 			return
 		default:
 			if automode {
-				run(line, true)
+				Run(line, true)
 				input = ""
 				//haderror = false
 			} else {
@@ -90,7 +90,7 @@ func repl() {
 	}
 }
 
-func run(code string, p bool) Transpiler {
+func Run(code string, p bool) Transpiler {
 	cont, err := ioutil.ReadFile(libdir + "prelude.pfn")
 
 	if err != nil {
@@ -108,7 +108,7 @@ func run(code string, p bool) Transpiler {
 	tp.start()
 
 	if p {
-		fmt.Print(tp.output)
+		fmt.Print(tp.Output)
 	}
 
 	return tp

@@ -1,9 +1,0 @@
-.avg (
-    |vect|
-
-    -> (/ (sum vect) (len vect))
-)
-
-arr:=<1,2,3>
-
-(print (avg arr))
