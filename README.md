@@ -1,6 +1,6 @@
 # pfn
 
-this is the go package for pfn, i made it a package for using it with the [pfn-play](github.com/TsukiGva2/pfn-play) repo, which is a version of the language running on the web.
+this is the go package for pfn, i made it a package for using it with the [pfn-play](https://github.com/TsukiGva2/pfn-play) repo, which is a version of the language running on the web.
 
 ### using this code
 
