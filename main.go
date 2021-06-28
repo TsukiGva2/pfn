@@ -91,14 +91,6 @@ func repl() {
 }
 
 func Run(code string, p bool) Transpiler {
-	cont, err := ioutil.ReadFile(libdir + "prelude.pfn")
-
-	if err != nil {
-		panic(err)
-	}
-
-	code = string(cont) + "\n\n" + code
-
 	sc := Scanner{code, 0, 0, 0, false}
 	tokens := sc.scanTokens()
 	//for i := range tokens {
