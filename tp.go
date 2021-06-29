@@ -6,36 +6,36 @@ import (
 	"strings"
 )
 
-/*
-	types used for defining functions
-	tNormal is for named arguments
-	ex:
+const ( // Atypes
+	/*
+		types used for defining function arguments
+		tNormal is for named arguments
+		ex:
 
 		.f(|x,y|->(+ x y))
 
-	in this example both x and y
-	will be of type tNormal, and defined as
+		in this example both x and y
+		will be of type tNormal, and defined as
 
 		x, y = args[0], args[1]
 
-	on the function body.
+		on the function body.
 
-	tCompare is for pattern matched functions
-	ex:
+		tCompare is for pattern matched arguments
+		ex:
 
-		.f(|0|->...)
+		.f(|0|->"undefined")
 
-	in this example there are no names to the
-	arguments to be bind to, so the arguments
-	are compared against the specified literal instead,
-	you would see this on the function body:
+		in this example there are no names to the
+		arguments to be bind to, so the arguments
+		are compared against the specified literal instead,
+		you would see this on the function body:
 
 		if 0 != args[0]:
-			...
+			raise UnmatchedError()
 
-	where '0' is of type tCompare.
-*/
-const (
+		where '0' is of type tCompare.
+	*/
 	tNormal = iota
 	tCompare
 )
@@ -991,11 +991,11 @@ func (tp Transpiler) err(where string, msg string) {
 
 func (tp *Transpiler) rfwo(fns []parserFn) (string, error) {
 	/*
-			Return First Working One
+		Return First Working One
 
-			returns the first matching
-		 	parsing function on the given
-			list
+		returns the first matching
+		parsing function on the given
+		list
 	*/
 
 	old := tp.current
