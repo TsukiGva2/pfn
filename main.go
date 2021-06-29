@@ -111,10 +111,6 @@ func Run(code string, p bool) Transpiler {
 	if p {
 		fmt.Print(tp.Output)
 	}
-	
-	if !p {
-		return Transpiler{0, tokens, "?????????"}	
-	}
 
 	return tp
 }
