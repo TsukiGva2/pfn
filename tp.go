@@ -935,9 +935,8 @@ func (tp *Transpiler) let() (string, error) {
 
 	tp.advance(1)
 
-	code += tp.code(cEOF, "end")
+	code += tp.code(cEnd, "")
 
-	code += "\n"
 	code += "del " + varname
 	code += "\n"
 	return code,nil
