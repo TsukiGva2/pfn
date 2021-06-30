@@ -317,7 +317,7 @@ func (tp *Transpiler) variable() (string, error) {
 func (tp *Transpiler) expr() (string, error) {
 	// (call | literal)
 
-	fns := []parserFn{tp.expr, tp.py, tp.call, tp.index, tp.ewhen, tp.list, tp.literal}
+	fns := []parserFn{tp.let, tp.py, tp.call, tp.index, tp.ewhen, tp.list, tp.literal}
 	old := tp.current
 
 	for i := range fns {
