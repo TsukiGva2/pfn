@@ -317,7 +317,7 @@ func (tp *Transpiler) variable() (string, error) {
 func (tp *Transpiler) expr() (string, error) {
 	// (call | literal)
 
-	fns := []parserFn{tp.py, tp.call, tp.index, tp.ewhen, tp.list, tp.literal}
+	fns := []parserFn{tp.expr, tp.py, tp.call, tp.index, tp.ewhen, tp.list, tp.literal}
 	old := tp.current
 
 	for i := range fns {
@@ -903,6 +903,44 @@ func (tp *Transpiler) brk() (string, error) {
 	}
 
 	return "break", nil
+}
+
+func (tp *Transpiler) let() (string, error) {
+	tok := tp.ctoken()
+
+	if tok.tokTy != cIdentifier || tok.lexeme != "let" {
+		return "", errors.New("not a let clause")
+	}
+
+	tp.advance(1)
+
+	tok = tp.ctoken()
+
+	v, err := tp.variable()
+
+	if err != nil {
+		return "", err
+	}
+
+	tp.advance(1)
+	varname := tok.lexeme
+
+	code := v
+	code += "\n"
+
+	tok = tp.ctoken()
+	if tok.tokTy != cIdentifier || tok.lexeme != "in" {
+		return "", errors.New("not a let clause: no in")
+	}
+
+	tp.advance(1)
+
+	code += tp.code(cEOF, "end")
+
+	code += "\n"
+	code += "del " + varname
+	code += "\n"
+	return code,nil
 }
 
 func (tp *Transpiler) index() (string, error) {
