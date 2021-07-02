@@ -167,7 +167,7 @@ begin:
 	case '"':
 		return s.getstr('"')
 	case '%':
-		return s.getstr(' ')
+		return s.prefixstr()
 	case 'f':
 		if s.match('"') {
 			return s.getstr('"')
@@ -257,6 +257,20 @@ func (s *Scanner) getstr(end byte) Token {
 	s.advance()
 
 	value := s.text[s.start+1 : s.current-1]
+	return s.mkTok(cString, value)
+}
+
+func (s *Scanner) prefixstr() Token {
+	for !s.isAtEnd() && s.isAlpha(s.peek()) {
+		if s.peek() == '\n' {
+			s.line++
+		}
+		s.advance()
+	}
+
+	s.advance()
+
+	value := s.text[s.start+1 : s.current]
 	return s.mkTok(cString, value)
 }
 
