@@ -270,7 +270,7 @@ func (s *Scanner) prefixstr() Token {
 
 	s.advance()
 
-	value := s.text[s.start+1 : s.current]
+	value := s.text[s.start+1 : s.current-1]
 	return s.mkTok(cString, value)
 }
 
