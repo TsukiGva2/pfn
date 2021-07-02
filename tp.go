@@ -453,7 +453,7 @@ func (tp *Transpiler) literal() (string, error) {
 	case cNumber:
 		break
 	case cString:
-		break
+		return "\""+tok.literal+"\"", nil
 	case cIdentifier:
 		f, exists := fns[tok.lexeme]
 

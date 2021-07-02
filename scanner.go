@@ -166,6 +166,8 @@ begin:
 		return s.partialTok(tern(s.match('='), cSlashEq, cSlash))
 	case '"':
 		return s.getstr('"')
+	case '%':
+		return s.getstr(' ')
 	case 'f':
 		if s.match('"') {
 			return s.getstr('"')
