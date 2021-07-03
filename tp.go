@@ -100,7 +100,7 @@ func (tp *Transpiler) code(end int, alt string, extra ...parserFn) string {
 	var output string
 
 	pfns = append(pfns, extra...)
-	pfns = append(pfns, tp.py, tp.out, tp.fn, tp.loop, tp.when, tp.variable, tp.expr)
+	pfns = append(pfns, tp.py, tp.out, tp.fn, tp.loop, tp.when, tp.variable, tp.expr, tp.class)
 
 	for {
 		tok := tp.ctoken()
@@ -980,6 +980,39 @@ func (tp *Transpiler) index() (string, error) {
 	output += "[" + expr + "]"
 
 	return output, nil
+}
+
+func (tp *Transpiler) class() (string, error) {
+	// "=" id "{" code "}"
+	tok := tp.ctoken()
+
+	if tok.tokTy != cEq {
+		return "", errors.New("not a class: no =")
+	}
+
+	tp.advance(1)
+	tok = tp.ctoken()
+
+	if tok.tokTy != cIdentifier {
+		return "", errors.New("not a class: no identifier")
+	}
+	name := tok.lexeme
+
+	tp.advance(1)
+	tok = tp.ctoken()
+
+	if tok.tokTy != cLbrace {
+		return "", errors.New("not a class: no '{'")
+	}
+
+	tp.advance(1)
+	tok = tp.ctoken()
+
+	ident++
+	body := tp.code(cRbrace, "")
+	ident--
+
+	return "class " + name + ":\n" + body
 }
 
 // dangerous language constructs
