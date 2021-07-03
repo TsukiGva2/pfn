@@ -983,7 +983,7 @@ func (tp *Transpiler) index() (string, error) {
 }
 
 func (tp *Transpiler) class() (string, error) {
-	// "=" id "{" code "}"
+	// "=" id "(" code ")"
 	tok := tp.ctoken()
 
 	if tok.tokTy != cEq {
@@ -1001,7 +1001,7 @@ func (tp *Transpiler) class() (string, error) {
 	tp.advance(1)
 	tok = tp.ctoken()
 
-	if tok.tokTy != cLbrace {
+	if tok.tokTy != cLparen {
 		return "", errors.New("not a class: no '{'")
 	}
 
@@ -1009,7 +1009,7 @@ func (tp *Transpiler) class() (string, error) {
 	tok = tp.ctoken()
 
 	ident++
-	body := tp.code(cRbrace, "")
+	body := tp.code(cRparen, "")
 	ident--
 
 	return "class " + name + ":\n" + body, nil
