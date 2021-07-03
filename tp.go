@@ -1012,7 +1012,7 @@ func (tp *Transpiler) class() (string, error) {
 	body := tp.code(cRbrace, "")
 	ident--
 
-	return "class " + name + ":\n" + body
+	return "class " + name + ":\n" + body, nil
 }
 
 // dangerous language constructs
