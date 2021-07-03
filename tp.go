@@ -453,7 +453,7 @@ func (tp *Transpiler) literal() (string, error) {
 	case cNumber:
 		break
 	case cString:
-		return "\""+tok.literal.(string)+"\"", nil
+		return "\"" + tok.literal.(string) + "\"", nil
 	case cIdentifier:
 		f, exists := fns[tok.lexeme]
 
@@ -939,7 +939,7 @@ func (tp *Transpiler) let() (string, error) {
 
 	code += "del " + varname
 	code += "\n"
-	return code,nil
+	return code, nil
 }
 
 func (tp *Transpiler) index() (string, error) {
@@ -980,37 +980,6 @@ func (tp *Transpiler) index() (string, error) {
 	output += "[" + expr + "]"
 
 	return output, nil
-}
-
-func (tp *Transpiler) varargs() (string, error) {
-	tok := tp.ctoken()
-
-	if tok.tokTy != cDot {
-		return "", errors.New("not a varargs expression")
-	}
-
-	tp.advance(1)
-	tok = tp.ctoken()
-
-	if tok.tokTy != cDot {
-		return "", errors.New("not a varargs expression")
-	}
-
-	tp.advance(1)
-	tok = tp.ctoken()
-
-	if tok.tokTy != cDot {
-		return "", errors.New("not a varargs expression")
-	}
-
-	tp.advance(1)
-	tok = tp.ctoken()
-
-	if tok.tokTy != cIdentifier {
-		return "", errors.New("not a varargs expression: no identifier")
-	}
-
-	return "*"+tok.lexeme, nil
 }
 
 // dangerous language constructs
