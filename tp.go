@@ -982,6 +982,37 @@ func (tp *Transpiler) index() (string, error) {
 	return output, nil
 }
 
+func (tp *Transpiler) varargs() (string, error) {
+	tok := tp.ctoken()
+
+	if tok.tokTy != cDot {
+		return "", errors.New("not a varargs expression")
+	}
+
+	tp.advance(1)
+	tok = tp.ctoken()
+
+	if tok.tokTy != cDot {
+		return "", errors.New("not a varargs expression")
+	}
+
+	tp.advance(1)
+	tok = tp.ctoken()
+
+	if tok.tokTy != cDot {
+		return "", errors.New("not a varargs expression")
+	}
+
+	tp.advance(1)
+	tok = tp.ctoken()
+
+	if tok.tokTy != cIdentifier {
+		return "", errors.New("not a varargs expression: no identifier")
+	}
+
+	return "*"+tok.lexeme, nil
+}
+
 // dangerous language constructs
 
 func (tp *Transpiler) out() (string, error) {
