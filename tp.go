@@ -1030,6 +1030,25 @@ func (tp *Transpiler) class() (string, error) {
 		return "", errors.New("not a class: unexpected EOF")
 	}
 
+
+	pp := fmt.Sprintf("%v", fields)
+	list := pp[1:len(pp)-2]
+
+	output := "class "+name+":\n"
+	ident++
+	output += strings.Repeat("\t", ident)
+	output += "def __init__(self,"+list+"):\n"
+	ident++
+
+	for i := range fields {
+		output += strings.Repeat("\t", ident)
+		output += "self." + fields[i] + "=" + fields[i] + "\n"
+	}
+
+	ident -= 2
+
+	output += "\n"
+
 	return output, nil
 }
 
