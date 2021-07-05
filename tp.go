@@ -1040,7 +1040,7 @@ func (tp *Transpiler) class() (string, error) {
 		def := "def pfn_" + fname + "at" + name + "(*args):\n"
 
 		output += def + fn[strings.IndexByte(fn, '\n')+1:] + "\n"
-		output += name + ".define(" + fname + ")\n"
+		output += name + ".define('" + fname + "')\n"
 		output += "del pfn_" + fname + "at" + name
 	}
 
