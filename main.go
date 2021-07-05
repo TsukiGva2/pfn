@@ -5,7 +5,14 @@ import (
 	"io/ioutil"
 )
 
+var utils string = `
+.Class (|name|
+	(exec (+ "class " name ":\n" "\tdef define(m):\n\t\texec('" name ".' + m + ' = ' + 'pfn_' + m + 'at" name "', globals())\n") (globals))
+)
+`
+
 func Run(code string, p bool, noprelude bool) Transpiler {
+	code = utils + code
 	if !noprelude {
 		cont, err := ioutil.ReadFile("prelude.pfn")
 
