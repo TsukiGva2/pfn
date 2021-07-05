@@ -1033,10 +1033,15 @@ func (tp *Transpiler) class() (string, error) {
 
 	for i := range fns {
 		fn := fns[i]
-		fname := fn[4:strings.IndexByte(fn, '(')]
 
-		output += fn + "\n"
+		// get function name, skips 'def pfn_'(8 chars)
+		fname := fn[8:strings.IndexByte(fn, '(')]
+
+		def := "def pfn_" + fname + "at" + name + "(*args):\n"
+
+		output += def + fn[strings.IndexByte(fn, '\n')+1:] + "\n"
 		output += name + ".define(" + fname + ")\n"
+		output += "del pfn_" + fname + "at" + name
 	}
 
 	return output, nil
