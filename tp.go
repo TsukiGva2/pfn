@@ -984,6 +984,9 @@ func (tp *Transpiler) index() (string, error) {
 
 func (tp *Transpiler) class() (string, error) {
 	// "=" id "(" code ")"
+	var name string
+	var fns []string
+
 	tok := tp.ctoken()
 
 	if tok.tokTy != cEq {
@@ -996,7 +999,7 @@ func (tp *Transpiler) class() (string, error) {
 	if tok.tokTy != cIdentifier {
 		return "", errors.New("not a class: no identifier")
 	}
-	name := tok.lexeme
+	name = tok.lexeme
 
 	tp.advance(1)
 	tok = tp.ctoken()
@@ -1008,11 +1011,35 @@ func (tp *Transpiler) class() (string, error) {
 	tp.advance(1)
 	tok = tp.ctoken()
 
-	ident++
-	body := tp.code(cRparen, "")
-	ident--
+	for true {
+		if tok.tokTy == cRparen || tok.tokTy == cEOF {
+			break
+		}
+		f, err := tp.fn()
+		if err != nil {
+			panic(err)
+		}
+		fns = append(fns, f)
 
-	return "class " + name + ":\n" + body, nil
+		tp.advance(1)
+		tok = tp.ctoken()
+	}
+
+	if tok.tokTy != cRparen {
+		return "", errors.New("not a class: unexpected EOF")
+	}
+
+	output := "pfn_Class('" + name + "')\n"
+
+	for i := range fns {
+		fn := fns[i]
+		fname := fn[4:strings.IndexByte(fn, '(')]
+
+		output += fn + "\n"
+		output += name + ".define(" + fname + ")\n"
+	}
+
+	return output, nil
 }
 
 // dangerous language constructs
