@@ -985,7 +985,7 @@ func (tp *Transpiler) index() (string, error) {
 func (tp *Transpiler) class() (string, error) {
 	// "=" id "(" code ")"
 	var name string
-	var fns []string
+	var fields []string
 
 	tok := tp.ctoken()
 
@@ -1015,11 +1015,12 @@ func (tp *Transpiler) class() (string, error) {
 		if tok.tokTy == cRparen || tok.tokTy == cEOF {
 			break
 		}
-		f, err := tp.fn()
-		if err != nil {
-			panic(err)
+
+		if tok.tokTy != cIdentifier {
+			return "", errors.New("not a class: no identifier")
 		}
-		fns = append(fns, f)
+
+		fields = append(fields, tok.lexeme)
 
 		tp.advance(1)
 		tok = tp.ctoken()
@@ -1027,21 +1028,6 @@ func (tp *Transpiler) class() (string, error) {
 
 	if tok.tokTy != cRparen {
 		return "", errors.New("not a class: unexpected EOF")
-	}
-
-	output := "pfn_Class('" + name + "')\n"
-
-	for i := range fns {
-		fn := fns[i]
-
-		// get function name, skips 'def pfn_'(8 chars)
-		fname := fn[8:strings.IndexByte(fn, '(')]
-
-		def := "def pfn_" + fname + "at" + name + "(*args):\n"
-
-		output += def + fn[strings.IndexByte(fn, '\n')+1:] + "\n"
-		output += name + ".define('" + fname + "')\n"
-		output += "del pfn_" + fname + "at" + name
 	}
 
 	return output, nil
