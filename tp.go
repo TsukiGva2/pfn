@@ -1030,9 +1030,15 @@ func (tp *Transpiler) class() (string, error) {
 		return "", errors.New("not a class: unexpected EOF")
 	}
 
+	list := ""
 
-	pp := fmt.Sprintf("%#v", fields)
-	list := pp[6:len(pp)-1]
+	for i := range fields {
+		list += fields[i]
+
+		if i < len(fields) {
+			list += ","
+		}
+	}
 
 	output := "class "+name+":\n"
 	ident++
