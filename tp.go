@@ -1031,8 +1031,8 @@ func (tp *Transpiler) class() (string, error) {
 	}
 
 
-	pp := fmt.Sprintf("%v", fields)
-	list := pp[1:len(pp)-2]
+	pp := fmt.Sprintf("%#v", fields)
+	list := pp[6:len(pp)-1]
 
 	output := "class "+name+":\n"
 	ident++
