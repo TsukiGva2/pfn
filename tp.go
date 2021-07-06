@@ -32,7 +32,7 @@ const ( // Atypes
 		you would see this on the function body:
 
 		if 0 != args[0]:
-			raise UnmatchedError()
+		raise UnmatchedError()
 
 		where '0' is of type tCompare.
 	*/
@@ -74,7 +74,7 @@ func (tp *Transpiler) start() {
 	pfncall += "	broke=False\n"
 	pfncall += "	for f in p:\n"
 	pfncall += "		try:\n"
-	pfncall += "			result=f(*args)\n"
+	pfncall += "			result=eval(f+'(*'+str(args)+')'\n"
 	pfncall += "		except (UnmatchedError, ArgcountError):\n"
 	pfncall += "			continue\n"
 	pfncall += "		broke=True\n\n"
@@ -140,11 +140,29 @@ func (tp *Transpiler) fn() (string, error) {
 	var code string
 	var prefix string
 	var args []argument
+	var receiver bool
+	var classname string
 
 	tok := tp.ctoken()
 
 	if tok.tokTy == cAt {
 		prefix = "async "
+		tp.advance(1)
+	}
+
+	tok = tp.ctoken()
+
+	if tok.tokTy == cIdentifier {
+		classname = tok.lexeme
+
+		tp.advance(1)
+		tok = tp.ctoken()
+
+		if tok.tokTy != cHat {
+			return "", errors.New("not a function: invalid receiver")
+		}
+
+		receiver = true
 		tp.advance(1)
 	}
 
@@ -240,12 +258,21 @@ func (tp *Transpiler) fn() (string, error) {
 	ident--
 
 	if exists {
-		fns[oldName] = append(f, fmt.Sprintf("pfn_%s", fname))
+		if !receiver {
+			fns[oldName] = append(f, fmt.Sprintf("pfn_%s", fname))
+			return code, nil
+		}
+
+		fns[oldName] = append(f, fmt.Sprintf("pfn_%s_|%s|", fname, classname))
 		return code, nil
 	}
 
-	fns[oldName] = []string{fmt.Sprintf("pfn_%s", fname)}
+	if !receiver {
+		fns[oldName] = []string{fmt.Sprintf("pfn_%s", fname)}
+		return code, nil
+	}
 
+	fns[oldName] = []string{fmt.Sprintf("pfn_%s_|%s|", fname, classname)}
 	return code, nil
 }
 
@@ -656,7 +683,14 @@ func (tp *Transpiler) call() (string, error) {
 	f, exists := fns[fname]
 
 	if exists {
-		output = fmt.Sprintf(prefix+"__pfn_call([%s], [%s])", strings.Join(f, ","), args)
+		list := ""
+		for i := range f {
+			list += "'" + f[i] + "'"
+			if i < len(f)-1 {
+				list += ","
+			}
+		}
+		output = fmt.Sprintf(prefix+"__pfn_call([%s], [%s])", list, args)
 		//output = fmt.Sprintf("broke=False\nfor f in [%v]:\n\ttry:\n\t\tf(%s)\n\texcept (UnmatchedError, ArgcountError):\n\t\tcontinue\n\tbroke=True\n\tbreak\n\nif not broke:\n\traise Exception('no matching function')\n", strings.Join(f, ","), args)
 
 		return output, nil
@@ -1005,7 +1039,7 @@ func (tp *Transpiler) class() (string, error) {
 	tok = tp.ctoken()
 
 	if tok.tokTy != cLparen {
-		return "", errors.New("not a class: no '{'")
+		return "", errors.New("not a class: no '('")
 	}
 
 	tp.advance(1)
@@ -1033,17 +1067,15 @@ func (tp *Transpiler) class() (string, error) {
 	list := ""
 
 	for i := range fields {
-		list += fields[i]
-
-		if i < len(fields)-1 {
+		if i < len(fields)-2 {
 			list += ","
 		}
 	}
 
-	output := "class "+name+":\n"
+	output := "class " + name + ":\n"
 	ident++
 	output += strings.Repeat("\t", ident)
-	output += "def __init__(self,"+list+"):\n"
+	output += "def __init__(self," + list + "):\n"
 	ident++
 
 	for i := range fields {
