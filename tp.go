@@ -1039,7 +1039,9 @@ func (tp *Transpiler) class() (string, error) {
 	list := ""
 
 	for i := range fields {
-		if i < len(fields)-2 {
+		list += fields[i]
+
+		if i < len(fields)-1 {
 			list += ","
 		}
 	}
