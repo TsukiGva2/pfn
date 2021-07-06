@@ -35,9 +35,28 @@ const ( // Atypes
 		raise UnmatchedError()
 
 		where '0' is of type tCompare.
+
+		tTypeAssert is for type assertions, ex:
+
+		.f(|<list>x|->(sum x))
+
+		in this example 'x' must be of type 'list'
+		the function body will look like this:
+
+		x = args[0]
+		if type(list) != type:
+			raise Exception(...)
+		if list != type(x):
+			raise UnmatchedError(...)
+
+		pretty weird, i know, the first if statement
+		might seem useless, but it just checks if list
+		is actually a type, to prevent nonsense like
+		0 != type(x).
 	*/
 	tNormal = iota
 	tCompare
+	tTypeAssert
 )
 
 type argument struct {
@@ -45,7 +64,7 @@ type argument struct {
 	atype int
 }
 
-var ident int = 0
+var ident int
 var fns = make(map[string]([]string))
 
 type parserFn func() (string, error)
@@ -182,7 +201,32 @@ func (tp *Transpiler) fn() (string, error) {
 
 	if tok.tokTy != cBOr {
 		for {
-			if tok.tokTy != cIdentifier {
+			if tok.tokTy == cLt {
+				tp.advance(1)
+				tok = tp.ctoken()
+
+				expr, err := tp.expr()
+
+				if err != nil {
+					return "", errors.New("not a function: invalid type assertion: couldn't parse type expression")
+				}
+
+				tp.advance(1)
+				tok = tp.ctoken()
+
+				if tok.tokTy != cGt {
+					return "", errors.New("not a function: invalid type assertion")
+				}
+
+				tp.advance(1)
+				tok = tp.ctoken()
+
+				if tok.tokTy != cIdentifier {
+					return "", errors.New("not a function: invalid type assertion")
+				}
+
+				args = append(args, argument{tok.lexeme + "|" + expr, tTypeAssert})
+			} else if tok.tokTy != cIdentifier {
 				expr, err := tp.expr()
 
 				if err != nil {
@@ -227,6 +271,18 @@ func (tp *Transpiler) fn() (string, error) {
 
 		if arg.atype == tNormal {
 			code += fmt.Sprintf("\t%s = args[%d]\n", arg.expr, i)
+			continue
+		}
+
+		if arg.atype == tTypeAssert {
+			exp := arg.expr
+			argname := exp[:strings.Index(exp, "|")]
+			texpr := exp[strings.Index(exp, "|")+1:]
+
+			code += fmt.Sprintf("\t%s = args[%d]\n", argname, i)
+
+			code += fmt.Sprintf("\tif type(%s) != type:\n\t\traise Exception('type assertion expression must be a valid type')\n", texpr)
+			code += fmt.Sprintf("\tif %s != type(args[%d]):\n\t\traise UnmatchedError('unmatched')\n", texpr, i)
 			continue
 		}
 
