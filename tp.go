@@ -74,7 +74,7 @@ func (tp *Transpiler) start() {
 	pfncall += "	broke=False\n"
 	pfncall += "	for f in p:\n"
 	pfncall += "		try:\n"
-	pfncall += "			result=eval(f+'(*'+str(args)+')'\n"
+	pfncall += "			result=eval(f+'(*'+str(args)+')')\n"
 	pfncall += "		except (UnmatchedError, ArgcountError):\n"
 	pfncall += "			continue\n"
 	pfncall += "		broke=True\n\n"
@@ -140,29 +140,11 @@ func (tp *Transpiler) fn() (string, error) {
 	var code string
 	var prefix string
 	var args []argument
-	var receiver bool
-	var classname string
 
 	tok := tp.ctoken()
 
 	if tok.tokTy == cAt {
 		prefix = "async "
-		tp.advance(1)
-	}
-
-	tok = tp.ctoken()
-
-	if tok.tokTy == cIdentifier {
-		classname = tok.lexeme
-
-		tp.advance(1)
-		tok = tp.ctoken()
-
-		if tok.tokTy != cHat {
-			return "", errors.New("not a function: invalid receiver")
-		}
-
-		receiver = true
 		tp.advance(1)
 	}
 
@@ -258,21 +240,11 @@ func (tp *Transpiler) fn() (string, error) {
 	ident--
 
 	if exists {
-		if !receiver {
-			fns[oldName] = append(f, fmt.Sprintf("pfn_%s", fname))
-			return code, nil
-		}
-
-		fns[oldName] = append(f, fmt.Sprintf("pfn_%s_|%s|", fname, classname))
+		fns[oldName] = append(f, fmt.Sprintf("pfn_%s", fname))
 		return code, nil
 	}
 
-	if !receiver {
-		fns[oldName] = []string{fmt.Sprintf("pfn_%s", fname)}
-		return code, nil
-	}
-
-	fns[oldName] = []string{fmt.Sprintf("pfn_%s_|%s|", fname, classname)}
+	fns[oldName] = []string{fmt.Sprintf("pfn_%s", fname)}
 	return code, nil
 }
 
