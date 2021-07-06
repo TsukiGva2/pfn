@@ -3,6 +3,7 @@ package pfn
 import (
 	"errors"
 	"fmt"
+	"log"
 	"strings"
 )
 
@@ -67,6 +68,15 @@ type argument struct {
 var ident int
 var fns = make(map[string]([]string))
 
+var keywords = map[string]int{
+	"end":   0,
+	"when":  1,
+	"while": 2,
+	"loop":  3,
+	"break": 4,
+	"let":   5,
+}
+
 type parserFn func() (string, error)
 
 type Transpiler struct {
@@ -109,10 +119,16 @@ func (tp *Transpiler) start() {
 }
 
 func (tp *Transpiler) run() {
-	tp.Output += tp.code(cEOF, "")
+	out, err := tp.code(cEOF, "")
+
+	if err != nil {
+		panic(err)
+	}
+
+	tp.Output += out
 }
 
-func (tp *Transpiler) code(end int, alt string, extra ...parserFn) string {
+func (tp *Transpiler) code(end int, alt string, extra ...parserFn) (string, error) {
 	// (fn | var | expr)*
 
 	var pfns []parserFn
@@ -131,7 +147,7 @@ func (tp *Transpiler) code(end int, alt string, extra ...parserFn) string {
 		res, err := tp.rfwo(pfns)
 
 		if err != nil {
-			panic(err)
+			return "", err
 		}
 
 		lines := strings.Split(res, "\n")
@@ -147,7 +163,7 @@ func (tp *Transpiler) code(end int, alt string, extra ...parserFn) string {
 		tp.advance(1)
 	}
 
-	return output
+	return output, nil
 }
 
 // parsing functions
@@ -292,7 +308,13 @@ func (tp *Transpiler) fn() (string, error) {
 	tp.advance(1)
 
 	ident++
-	code += tp.code(cRparen, "", tp.ret)
+	out, err := tp.code(cRparen, "", tp.ret)
+
+	if err != nil {
+		return "", err
+	}
+
+	code += out
 	ident--
 
 	if exists {
@@ -514,6 +536,12 @@ func (tp *Transpiler) literal() (string, error) {
 
 		if exists {
 			tok.lexeme = fmt.Sprintf("(lambda *args: __pfn_call([%s], args))", strings.Join(f, ","))
+			break
+		}
+
+		_, exists = keywords[tok.lexeme]
+		if exists {
+			return "", errors.New("keyword '" + tok.lexeme + "' is not a valid literal")
 		}
 	case cMinus:
 		tp.advance(1)
@@ -820,7 +848,10 @@ func (tp *Transpiler) when() (string, error) {
 	tp.advance(1)
 
 	ident++
-	code := tp.code(cEnd, "else", tp.ret)
+	code, err := tp.code(cEnd, "else", tp.ret)
+	if err != nil {
+		return "", err
+	}
 	ident--
 
 	output += code
@@ -836,7 +867,10 @@ func (tp *Transpiler) when() (string, error) {
 		output += ":\n"
 
 		ident++
-		code = tp.code(cEnd, "", tp.ret)
+		code, err = tp.code(cEnd, "", tp.ret)
+		if err != nil {
+			return "", err
+		}
 		ident--
 
 		output += code
@@ -881,7 +915,10 @@ func (tp *Transpiler) loop() (string, error) {
 	tp.advance(1)
 
 	ident++
-	code := tp.code(cEloop, "", tp.brk)
+	code, err := tp.code(cEloop, "", tp.brk)
+	if err != nil {
+		return "", err
+	}
 	ident--
 
 	tok = tp.ctoken()
@@ -997,7 +1034,11 @@ func (tp *Transpiler) let() (string, error) {
 
 	tp.advance(1)
 
-	code += tp.code(cEnd, "", tp.ret)
+	out, err := tp.code(cEnd, "", tp.ret)
+	if err != nil {
+		return "", err
+	}
+	code += out
 
 	code += "del " + varname
 	code += "\n"
@@ -1131,7 +1172,10 @@ func (tp *Transpiler) out() (string, error) {
 
 	tp.advance(1)
 
-	code := tp.code(cEnd, "")
+	code, err := tp.code(cEnd, "")
+	if err != nil {
+		return "", err
+	}
 
 	tp.Output = code + "\n" + tp.Output
 
@@ -1159,8 +1203,14 @@ func (tp Transpiler) ctoken() Token {
 func (tp Transpiler) err(where string, msg string) {
 	//if !haderror {
 	//haderror = true
-	fmt.Printf("had error on %s, line %d, col %d\n%s\n",
-		where, tp.ctoken().line+1, (tp.ctoken().col+1)/(tp.ctoken().line+1), msg)
+	tok := tp.ctoken()
+
+	heading := "========================================="
+	red := "\033[1;31m"
+	normal := "\033[0m"
+
+	log.Fatalf("had error on %s, line %d\n%s%s\n%s%s\n%s%s%s\n",
+		where, tok.line+1, red, heading, normal, msg, red, heading, normal)
 	//}
 }
 
@@ -1175,7 +1225,14 @@ func (tp *Transpiler) rfwo(fns []parserFn) (string, error) {
 
 	old := tp.current
 
-	var last error
+	/*
+		couldn't think of a better name, 'max' is used for
+		storing the parser function that has taken the most steps,
+		it is used for setting 'probableCause' later.
+	*/
+	var max uint
+	var probableCause string
+	var tokenAtErr string
 
 	for i := range fns {
 		res, err := fns[i]()
@@ -1184,10 +1241,16 @@ func (tp *Transpiler) rfwo(fns []parserFn) (string, error) {
 			return res, nil
 		}
 
-		last = err
+		steps := tp.current - old
+		if steps >= max {
+			max = steps
+			probableCause = err.Error()
+			tokenAtErr = tp.ctoken().lexeme
+		}
+
 		tp.current = old
 	}
 
-	tp.err("rfwo", "no matching pfn")
-	panic(last)
+	tp.err("rfwo", "no matching pfn for tokens '"+tp.ctoken().lexeme+"' through '"+tokenAtErr+"'\nprobably because of this error: "+probableCause)
+	return "", errors.New("no matching pfn")
 }
