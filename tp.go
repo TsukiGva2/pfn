@@ -150,7 +150,7 @@ func (tp *Transpiler) code(end int, alt string, extra ...parserFn) (string, erro
 			break
 		}
 
-		res, err := tp.rfwo(pfns)
+		res, err := tp.findMatchingParserFn(pfns)
 
 		if err != nil {
 			return "", err
@@ -1223,7 +1223,7 @@ func (tp Transpiler) err(where string, msg string) {
 	//}
 }
 
-func (tp *Transpiler) rfwo(fns []parserFn) (string, error) {
+func (tp *Transpiler) findMatchingParserFn(fns []parserFn) (string, error) {
 	/*
 		Return First Working One
 
@@ -1260,6 +1260,6 @@ func (tp *Transpiler) rfwo(fns []parserFn) (string, error) {
 		tp.current = old
 	}
 
-	tp.err("rfwo", "no matching pfn for tokens '"+tp.ctoken().lexeme+"' through '"+tokenAtErr+"'\nprobably because of this error: "+probableCause)
+	tp.err("findMatchingParserFn", "no matching pfn for tokens '"+tp.ctoken().lexeme+"' through '"+tokenAtErr+"'\nprobably because of this error: "+probableCause)
 	return "", errors.New("no matching pfn")
 }
