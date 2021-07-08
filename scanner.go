@@ -49,6 +49,7 @@ const (
 	cEqArrow
 	cAssignment
 	cErr
+	cFString
 	cHat
 	cQuestion
 	cColon
@@ -170,7 +171,7 @@ begin:
 		return s.prefixstr()
 	case 'f':
 		if s.match('"') {
-			return s.getstr('"')
+			return s.getfstr('"')
 		}
 		return s.identifier()
 	case '\'':
@@ -258,6 +259,25 @@ func (s *Scanner) getstr(end byte) Token {
 
 	value := s.text[s.start+1 : s.current-1]
 	return s.mkTok(cString, value)
+}
+
+func (s *Scanner) getfstr(end byte) Token {
+	for s.peek() != end && !s.isAtEnd() {
+		if s.peek() == '\n' {
+			s.line++
+		}
+		s.advance()
+	}
+
+	if s.isAtEnd() {
+		fail(s.line, "untermitated string")
+		return s.partialTok(cEOF)
+	}
+
+	s.advance()
+
+	value := s.text[s.start+2 : s.current-1]
+	return s.mkTok(cFString, value)
 }
 
 func (s *Scanner) prefixstr() Token {

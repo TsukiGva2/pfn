@@ -65,17 +65,19 @@ type argument struct {
 	atype int
 }
 
-var ident int
-var fns = make(map[string]([]string))
-
-var keywords = map[string]int{
-	"end":   0,
-	"when":  1,
-	"while": 2,
-	"loop":  3,
-	"break": 4,
-	"let":   5,
-}
+var (
+	ident    int
+	fns      = make(map[string]([]string))
+	keywords = map[string]int{
+		"end":   0,
+		"when":  1,
+		"while": 2,
+		"loop":  3,
+		"break": 4,
+		"let":   5,
+	}
+	gextra []parserFn
+)
 
 type parserFn func() (string, error)
 
@@ -115,6 +117,8 @@ func (tp *Transpiler) start() {
 	tp.Output += pfncall
 	//tp.Output = fmt.Sprintf("broke=False\nfor f in [%v]:\n\ttry:\n\t\tf(%s)\n\texcept (UnmatchedError, ArgcountError):\n\t\tcontinue\n\tbroke=True\n\tbreak\n\nif not broke:\n\traise Exception('no matching function')\n")
 
+	gextra = append(gextra, tp.py, tp.out, tp.fn, tp.loop, tp.when, tp.variable, tp.expr, tp.class)
+
 	tp.run()
 }
 
@@ -134,8 +138,10 @@ func (tp *Transpiler) code(end int, alt string, extra ...parserFn) (string, erro
 	var pfns []parserFn
 	var output string
 
-	pfns = append(pfns, extra...)
-	pfns = append(pfns, tp.py, tp.out, tp.fn, tp.loop, tp.when, tp.variable, tp.expr, tp.class)
+	old := gextra
+	gextra = append(gextra, extra...)
+
+	pfns = append(pfns, gextra...)
 
 	for {
 		tok := tp.ctoken()
@@ -162,6 +168,8 @@ func (tp *Transpiler) code(end int, alt string, extra ...parserFn) (string, erro
 
 		tp.advance(1)
 	}
+
+	gextra = old
 
 	return output, nil
 }
@@ -531,12 +539,13 @@ func (tp *Transpiler) literal() (string, error) {
 		break
 	case cString:
 		return "\"" + tok.literal.(string) + "\"", nil
+	case cFString:
+		return "f\"" + tok.literal.(string) + "\"", nil
 	case cIdentifier:
 		f, exists := fns[tok.lexeme]
 
 		if exists {
-			tok.lexeme = fmt.Sprintf("(lambda *args: __pfn_call([%s], args))", strings.Join(f, ","))
-			break
+			return fmt.Sprintf("(lambda *args: __pfn_call([%s], args))", strings.Join(f, ",")), nil
 		}
 
 		_, exists = keywords[tok.lexeme]
