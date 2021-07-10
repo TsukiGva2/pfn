@@ -76,7 +76,9 @@ var (
 		"break": 4,
 		"let":   5,
 	}
-	gextra []parserFn
+	gextra     []parserFn
+	cerrs      []string
+	IgnoreExpr bool
 )
 
 type parserFn func() (string, error)
@@ -117,7 +119,7 @@ func (tp *Transpiler) start() {
 	tp.Output += pfncall
 	//tp.Output = fmt.Sprintf("broke=False\nfor f in [%v]:\n\ttry:\n\t\tf(%s)\n\texcept (UnmatchedError, ArgcountError):\n\t\tcontinue\n\tbroke=True\n\tbreak\n\nif not broke:\n\traise Exception('no matching function')\n")
 
-	gextra = append(gextra, tp.py, tp.out, tp.fn, tp.loop, tp.when, tp.variable, tp.expr, tp.class)
+	gextra = append(gextra, tp.py, tp.out, tp.fn, tp.loop, tp.when, tp.match, tp.variable, tp.expr, tp.class)
 
 	tp.run()
 }
@@ -405,6 +407,10 @@ func (tp *Transpiler) expr() (string, error) {
 	fns := []parserFn{tp.let, tp.py, tp.call, tp.index, tp.ewhen, tp.list, tp.literal}
 	old := tp.current
 
+	var max uint
+	var probableCause string
+	var tokenAtErr string
+
 	for i := range fns {
 		res, err := fns[i]()
 
@@ -412,7 +418,22 @@ func (tp *Transpiler) expr() (string, error) {
 			return res, nil
 		}
 
+		steps := tp.current - old
+		if steps >= max {
+			max = steps
+			probableCause = err.Error()
+			tokenAtErr = tp.ctoken().lexeme
+		}
+
 		tp.current = old
+	}
+
+	if tp.ctoken().lexeme == "" && tokenAtErr == "" {
+		return "", errors.New("error parsing expr")
+	}
+
+	if !IgnoreExpr {
+		tp.lerr("expr", "no matching (expr)pfn for tokens '"+tp.ctoken().lexeme+"' through '"+tokenAtErr+"'\nprobably because of this error: "+probableCause)
 	}
 
 	return "", errors.New("error parsing expr")
@@ -613,6 +634,8 @@ func (tp *Transpiler) call() (string, error) {
 	case cGtEq:
 		fallthrough
 	case cLtEq:
+		fallthrough
+	case cColon:
 		fallthrough
 	case cSlash:
 		isOp = true
@@ -1170,6 +1193,86 @@ func (tp *Transpiler) class() (string, error) {
 	return output, nil
 }
 
+func (tp *Transpiler) match() (string, error) {
+	var output string
+	var matchd string
+
+	tok := tp.ctoken()
+
+	if tok.tokTy != cIdentifier || tok.lexeme != "match" {
+		return "", errors.New("not a match statement: no 'match'")
+	}
+
+	tp.advance(1)
+	tok = tp.ctoken()
+
+	matchd, err := tp.expr()
+
+	if err != nil {
+		return "", errors.New("not a match statement: error parsing expression to be matched")
+	}
+
+	output += "_pfn___matchd__ = " + matchd + "\n"
+
+	tp.advance(1)
+	tok = tp.ctoken()
+
+	prefix := ""
+
+	for true {
+		tok = tp.ctoken()
+
+		if tok.tokTy == cEnd {
+			break
+		}
+
+		if tok.tokTy == cEOF {
+			return "", errors.New("not a match statement: expected 'end', got 'EOF'")
+		}
+
+		if tok.tokTy != cDol {
+			return "", errors.New("not a match statement: invalid match expression")
+		}
+
+		tp.advance(1)
+
+		expr, err := tp.expr()
+
+		if err != nil {
+			return "", errors.New("not a match statement: error parsing match")
+		}
+
+		output += prefix + "if _pfn___matchd__ == " + expr + ":\n"
+
+		tp.advance(1)
+		tok = tp.ctoken()
+
+		if tok.tokTy != cLparen {
+			return "", errors.New("not a match statement: missing match body")
+		}
+
+		tp.advance(1)
+
+		ident++
+		code, err := tp.code(cRparen, "", tp.brk)
+		ident--
+
+		if err != nil {
+			return "", errors.New("on match: error parsing match body")
+		}
+
+		output += code
+
+		tp.advance(1)
+
+		prefix = "el"
+	}
+
+	output += "\ndel _pfn___matchd__"
+
+	return output, nil
+}
+
 // dangerous language constructs
 
 func (tp *Transpiler) out() (string, error) {
@@ -1209,6 +1312,7 @@ func (tp Transpiler) ctoken() Token {
 	return tp.tokens[tp.current]
 
 }
+
 func (tp Transpiler) err(where string, msg string) {
 	//if !haderror {
 	//haderror = true
@@ -1217,9 +1321,33 @@ func (tp Transpiler) err(where string, msg string) {
 	heading := "========================================="
 	red := "\033[1;31m"
 	normal := "\033[0m"
+	cerr := ""
 
-	log.Fatalf("had error on %s, line %d\n%s%s\n%s%s\n%s%s%s\n",
-		where, tok.line+1, red, heading, normal, msg, red, heading, normal)
+	for i := range cerrs {
+		cerr += cerrs[i] + "\n"
+	}
+
+	log.Fatalf("%shad error on %s, line %d\n%s%s\n%s%s\n%s%s%s\n",
+		cerr, where, tok.line+1, red, heading, normal, msg, red, heading, normal)
+	//}
+}
+
+func (tp Transpiler) lerr(where string, msg string) {
+	//if !haderror {
+	//haderror = true
+	tok := tp.ctoken()
+
+	heading := "========================================="
+	yellow := "\033[1;33m"
+	normal := "\033[0m"
+	cerr := ""
+
+	for i := range cerrs {
+		cerr += cerrs[i] + "\n"
+	}
+
+	fmt.Printf("%shad error on %s.\nyou can probably ignore this error safely, as it was not called from rfwo\nthe caller may not be aware of pfns like return, for example.\nline %d\n%s%s\n%s%s\n%s%s%s\n",
+		cerr, where, tok.line+1, yellow, heading, normal, msg, yellow, heading, normal)
 	//}
 }
 
@@ -1262,4 +1390,8 @@ func (tp *Transpiler) findMatchingParserFn(fns []parserFn) (string, error) {
 
 	tp.err("findMatchingParserFn", "no matching pfn for tokens '"+tp.ctoken().lexeme+"' through '"+tokenAtErr+"'\nprobably because of this error: "+probableCause)
 	return "", errors.New("no matching pfn")
+}
+
+func (tp *Transpiler) rm() {
+	tp.tokens = append(tp.tokens[:tp.current], tp.tokens[tp.current+1:]...)
 }

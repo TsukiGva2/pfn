@@ -5,7 +5,8 @@ import (
 	"io/ioutil"
 )
 
-func Run(code string, p bool, noprelude bool) Transpiler {
+func Run(code string, p bool, noprelude bool, customErrs ...string) Transpiler {
+	cerrs = customErrs
 	if !noprelude {
 		cont, err := ioutil.ReadFile("prelude.pfn")
 
