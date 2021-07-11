@@ -1212,7 +1212,7 @@ func (tp *Transpiler) match() (string, error) {
 		return "", errors.New("not a match statement: error parsing expression to be matched")
 	}
 
-	output += "_pfn___matchd__ = " + matchd + "\n"
+	output += "__pfn___matchd__ = " + matchd + "\n"
 
 	tp.advance(1)
 	tok = tp.ctoken()
@@ -1242,7 +1242,7 @@ func (tp *Transpiler) match() (string, error) {
 			return "", errors.New("not a match statement: error parsing match")
 		}
 
-		output += prefix + "if _pfn___matchd__ == " + expr + ":\n"
+		output += prefix + "if __pfn___matchd__ == " + expr + ":\n"
 
 		tp.advance(1)
 		tok = tp.ctoken()
@@ -1268,7 +1268,7 @@ func (tp *Transpiler) match() (string, error) {
 		prefix = "el"
 	}
 
-	output += "\ndel _pfn___matchd__"
+	output += "\ndel __pfn___matchd__"
 
 	return output, nil
 }
