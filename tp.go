@@ -37,7 +37,7 @@ const ( // Atypes
 
 		where '0' is of type tCompare.
 
-		tTypeAssert is for type assertions, ex:
+		tTypeAssertX is for type assertions, ex:
 
 		.f(|<list>x|->(sum x))
 
@@ -54,10 +54,17 @@ const ( // Atypes
 		might seem useless, but it just checks if list
 		is actually a type, to prevent nonsense like
 		0 != type(x).
+
+		a type assertion can have two forms, N and C
+		where N is for Normal (as in tNormal) and C is
+		for Compare (as in tCompare), both do two things
+		1 - the type assertion; and
+		2 - the assignment/matching.
 	*/
 	tNormal = iota
 	tCompare
-	tTypeAssert
+	tTypeAssertN
+	tTypeAssertC
 )
 
 type argument struct {
@@ -248,10 +255,17 @@ func (tp *Transpiler) fn() (string, error) {
 				tok = tp.ctoken()
 
 				if tok.tokTy != cIdentifier {
-					return "", errors.New("not a function: invalid type assertion")
+					expr2, err := tp.expr()
+
+					if err != nil {
+						return "", errors.New("not a function: error parsing expr")
+					}
+
+					args = append(args, argument{expr2 + "|" + expr, tTypeAssertC})
+					goto out
 				}
 
-				args = append(args, argument{tok.lexeme + "|" + expr, tTypeAssert})
+				args = append(args, argument{tok.lexeme + "|" + expr, tTypeAssertN})
 			} else if tok.tokTy != cIdentifier {
 				expr, err := tp.expr()
 
@@ -263,6 +277,7 @@ func (tp *Transpiler) fn() (string, error) {
 			} else {
 				args = append(args, argument{tok.lexeme, tNormal})
 			}
+out:
 
 			tp.advance(1)
 
@@ -295,20 +310,34 @@ func (tp *Transpiler) fn() (string, error) {
 	for i := range args {
 		arg := args[i]
 
+		if arg.expr == "_" {
+			continue
+		}
+
 		if arg.atype == tNormal {
 			code += fmt.Sprintf("\t%s = args[%d]\n", arg.expr, i)
 			continue
 		}
 
-		if arg.atype == tTypeAssert {
+		if arg.atype == tTypeAssertN {
 			exp := arg.expr
 			argname := exp[:strings.Index(exp, "|")]
 			texpr := exp[strings.Index(exp, "|")+1:]
 
+			code += fmt.Sprintf("\tif type(%s) != type:\n\t\traise Exception('type assertion expression must be a valid type')\n", texpr)
+			code += fmt.Sprintf("\tif %s != type(args[%d]):\n\t\traise UnmatchedError('unmatched')\n", texpr, i)
 			code += fmt.Sprintf("\t%s = args[%d]\n", argname, i)
+			continue
+		}
+
+		if arg.atype == tTypeAssertC {
+			exp := arg.expr
+			cmp := exp[:strings.Index(exp, "|")]
+			texpr := exp[strings.Index(exp, "|")+1:]
 
 			code += fmt.Sprintf("\tif type(%s) != type:\n\t\traise Exception('type assertion expression must be a valid type')\n", texpr)
 			code += fmt.Sprintf("\tif %s != type(args[%d]):\n\t\traise UnmatchedError('unmatched')\n", texpr, i)
+			code += fmt.Sprintf("\tif %s != args[%d]:\n\t\traise UnmatchedError('unmatched')\n", cmp, i)
 			continue
 		}
 
